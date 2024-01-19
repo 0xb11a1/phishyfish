@@ -1,0 +1,26 @@
+version: '3'
+services:
+  leet_frontend:
+    image: leet_frontend
+    build:
+      context: ./leet_frontend
+      dockerfile: Dockerfile
+    ports:
+      - "1337:3000"
+  api:
+    image: leet-api
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    volumes:
+      - ./api/db_file:/root/db/:z
+    ports:
+      - "8000:8000"
+    restart: always
+  user-frontend:
+    image: user-frontend
+    build:
+      context: ./user_frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:3000"

