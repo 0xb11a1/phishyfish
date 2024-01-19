@@ -4,6 +4,8 @@ During one of the RedTeam assessments with my team, we wanted a quick way to byp
 
 **PhishyFish** is meant to be a framework, the `user_frontend` project is an example of how to implement the user interface and interact with the API. You can alter it or create your own project based on it.
 
+[Demo](https://github.com/0xb11a1/phishyfish/assets/32736765/56fabb34-8860-495e-a994-62e4745bdeb5)
+
 # Installation
 
 Clone the project
