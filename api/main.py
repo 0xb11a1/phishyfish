@@ -34,9 +34,12 @@ api_key_header = APIKeyHeader(name="X-API-Key")
 models.Base.metadata.create_all(bind=engine)
 
 if DEBUG:
-    app = FastAPI(docs_url=None, redoc_url=None)
-else:
     app = FastAPI()
+else:
+    app = FastAPI(docs_url=None, redoc_url=None)
+
+app.mount("/api", app)
+
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
@@ -99,9 +102,13 @@ async def create_lovelyclient(
     request: Request,
     user_agent: Annotated[str | None, Header()] = None,
     db: Session = Depends(get_db),
+    ip_xforwarded: str = Header(None, alias="X-Forwarded-For"),
 ):
     id = int(time.time() * (10**6))
-    ip = request.client.host
+    if DEBUG:
+        ip = request.client.host
+    else:
+        ip = ip_xforwarded
     new_lovelyclient = models.User(id=id, ip=ip, user_agent=user_agent)
     crud.create_user(db, new_lovelyclient)
     broadcast_msg = {"type": "new", "value": id}

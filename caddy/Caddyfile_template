@@ -1,0 +1,9 @@
+{
+  debug  
+}
+
+# HTTPS site block
+DOMAIN_PLACEHOLDER:443 {  
+  reverse_proxy /api/* api_phishyfish:8000 
+  reverse_proxy user_frontend:3000
+}
