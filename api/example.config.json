@@ -1,4 +1,4 @@
 {
-    "API_KEY" : "",
-    "SLACK_URL": ""
+    "API_KEY" : "API_KEY_PLACEHOLDER",
+    "SLACK_URL": "SLACK_URL_PLACEHOLDER"
 }
