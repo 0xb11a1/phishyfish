@@ -8,7 +8,7 @@ usage() {
     RED='\033[0;31m'
     Blue='\033[0;34m'
     NC='\033[0m' 
-  echo -e "${RED}PhishyFish${NC} ${Blue}><(((º> ${NC} \nUsage: $0 [ -p password ] [ -s slack_webhookURL ] [-d domain_for_SSL_generation]" 
+  echo -e "${RED}PhishyFish${NC} ${Blue}><(((º> ${NC} \nUsage: $0 [ -p password ] [ -s slack_webhookURL ] [-d domain_for_SSL_generation ]" 
 }
 exit_abnormal() {
   usage
@@ -26,6 +26,11 @@ do
                 *) exit_abnormal;;
             esac
 done
+
+if [[ $password -eq "" ]]; then
+    echo "hmmmmmmmmmmm, nice empty password, but you need one to not get hacked"
+    exit_abnormal
+fi
 
 echo "[+] Generating the config files"
 cat api/example.config.json | sed -e "s/SLACK_URL/$slack_URL/g" -e "s/API_KEY_PLACEHOLDER/$password/g" > api/config.json
