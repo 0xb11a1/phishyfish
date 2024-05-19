@@ -2,3 +2,4 @@ fastapi
 sqlalchemy
 uvicorn
 requests
+selenium
