@@ -32,7 +32,10 @@ if [[ -z $password  ]]; then
 fi
 
 echo "[+] Generating the config files"
-cat api/example.config.json | sed -e "s/SLACK_URL/$slack_URL/g" -e "s/API_KEY_PLACEHOLDER/$password/g" > api/config.json
+cp api/example.config.json api/config.json
+sed -i "s|SLACK_URL_PLACEHOLDER|$slack_URL|g" api/config.json
+sed -i "s/API_KEY_PLACEHOLDER/$password/g"  api/config.json
+
 cp leet_frontend/example.env.local leet_frontend/.env.local
 cp user_frontend/example.env.local user_frontend/.env.local
 
@@ -47,7 +50,7 @@ else
     curr_domain=$website_domain
 fi
 
-cat ./caddy/Caddyfile_template | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > ./caddy/Caddyfile
+# cat ./caddy/Caddyfile_template | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > ./caddy/Caddyfile
 
 
 echo "[+] crating docker network if not exit"
