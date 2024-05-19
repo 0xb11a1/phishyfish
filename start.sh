@@ -26,8 +26,7 @@ do
                 *) exit_abnormal;;
             esac
 done
-
-if [[ $password -eq "" ]]; then
+if [[ -z $password  ]]; then
     echo "hmmmmmmmmmmm, nice empty password, but you need one to not get hacked"
     exit_abnormal
 fi
@@ -39,7 +38,7 @@ cp user_frontend/example.env.local user_frontend/.env.local
 
 # echo using $password $slack_URL $website_domain
 
-if [[ $website_domain -eq "" ]];
+if [[ -z $website_domain  ]];
 then 
     echo "[+] using localhost domain"
     curr_domain=localhost
