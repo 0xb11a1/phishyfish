@@ -19,7 +19,7 @@ import requests
 import time
 import os
 from fastapi.security import APIKeyHeader
-from utils import messageAdmin, CONFIG, logger
+from utils import messageAdmin, CONFIG, logger, DEBUG
 
 # import modules.auto_login
 from modules.auto_login import auto_login
@@ -33,8 +33,10 @@ api_key_header = APIKeyHeader(name="X-API-Key")
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
-
+if DEBUG:
+    app = FastAPI(docs_url=None, redoc_url=None)
+else:
+    app = FastAPI()
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
@@ -175,7 +177,8 @@ def auto_mode_func(q, id, username, password):
     login_return = json.loads(auto_mode.login())
     if login_return["msg"] != "OTP_timeout":
         auto_mode.collect_all()
-    time.sleep(300)  # DEBUG
+    if DEBUG:
+        time.sleep(300)  # DEBUG
 
 
 @app.get("/action/{id}")

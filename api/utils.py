@@ -10,14 +10,18 @@ with open("./config.json", "r") as f:
     CONFIG = json.load(f)
 
 
+DEBUG = True
+
+
 def messageAdmin(admin_message):
-    pass
-    # logging.log(logging.INFO, "messaging admin")
-    # try:
-    #     r = requests.post(
-    #         CONFIG["SLACK_URL"],
-    #         json={"text": f"{admin_message}"},
-    #         # headers={"Content-type": "application/json"},
-    #     )
-    # except:
-    #     pass
+    if DEBUG:
+        return
+    logging.log(logging.INFO, "messaging admin")
+    try:
+        r = requests.post(
+            CONFIG["SLACK_URL"],
+            json={"text": f"{admin_message}"},
+            # headers={"Content-type": "application/json"},
+        )
+    except:
+        pass

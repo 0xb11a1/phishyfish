@@ -175,7 +175,8 @@ class auto_login:
 
 
 if __name__ == "__main__":
-    obj = auto_login(None, "123", test.username, test.password)
-    print(obj.login())
-    obj.collect_all()
-    time.sleep(300)
+    pass
+    # obj = auto_login(None, "123", test.username, test.password)
+    # print(obj.login())
+    # obj.collect_all()
+    # time.sleep(300)
