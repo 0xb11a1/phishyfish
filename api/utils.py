@@ -10,7 +10,7 @@ with open("./config.json", "r") as f:
     CONFIG = json.load(f)
 
 
-DEBUG = True
+DEBUG = CONFIG["DEBUG"]
 
 
 def messageAdmin(admin_message):

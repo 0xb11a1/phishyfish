@@ -27,7 +27,7 @@ import threading
 from queue import Queue
 
 
-AUTO_MODE = True
+AUTO_MODE = False
 
 api_key_header = APIKeyHeader(name="X-API-Key")
 
@@ -277,3 +277,17 @@ def get_all(
 def get_User(id: int, request: Request, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, id)
     return db_user
+
+
+@app.put("/automode/{mode}",dependencies=[Depends(get_api_key)])
+def set_automode(mode:str, request: Request,db: Session = Depends(get_db)):
+    global AUTO_MODE
+    # not sure why i didn't with this long code, but i'm lazy to change it
+    if mode == "true" :
+        AUTO_MODE = True
+    else:
+        AUTO_MODE = False
+
+@app.get("/automode",dependencies=[Depends(get_api_key)])
+def get_automode(request: Request,db: Session = Depends(get_db)):
+    return json.dumps({"automode":str(AUTO_MODE)})
