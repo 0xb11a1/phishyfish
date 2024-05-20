@@ -50,7 +50,7 @@ else
     curr_domain=$website_domain
 fi
 
-# cat ./caddy/Caddyfile_template | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > ./caddy/Caddyfile
+cat ./caddy/Caddyfile_template | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > ./caddy/Caddyfile
 
 
 echo "[+] crating docker network if not exit"
