@@ -21,6 +21,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./api/db_file:/root/db/:z
+      - ./api/loot:/app/loot/:z
     ports:
       - "8000:8000"
     restart: always

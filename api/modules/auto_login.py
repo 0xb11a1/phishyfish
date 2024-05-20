@@ -15,7 +15,7 @@ try:
     import sys
 
     sys.path.insert(0, "..")
-    from utils import messageAdmin
+    from utils import messageAdmin, DEBUG
 except:
     pass
 try:
@@ -46,7 +46,18 @@ class auto_login:
         options = Options()
         # options.add_argument("--headless")
         # options.add_argument("--disable-gpu")
-        self.driver = webdriver.Chrome(service=s, options=options)
+        if DEBUG:
+            self.driver = webdriver.Chrome(service=s, options=options)
+        else:
+            options = Options()
+            options.add_argument("--headless")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+            chrome_prefs = {}
+            options.experimental_options["prefs"] = chrome_prefs
+            chrome_prefs["profile.default_content_settings"] = {"images": 2}
+            self.driver = webdriver.Chrome(options=options)
+
         self.driver.set_window_size(1920, 1080)
         self.q.put(self.return_json)
         # self.login()
@@ -133,6 +144,19 @@ class auto_login:
                     break
         return self.return_json
 
+
+    def set_chrome_options() -> Options:
+        """Sets chrome options for Selenium.
+        Chrome options for headless browser is enabled.
+        """
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_prefs = {}
+        chrome_options.experimental_options["prefs"] = chrome_prefs
+        chrome_prefs["profile.default_content_settings"] = {"images": 2}
+        return chrome_options
     def get_cookies(self):
         print("[+] cookies captured: ")
         self.set_return("Capturing cookies")

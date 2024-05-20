@@ -36,8 +36,7 @@ cp api/example.config.json api/config.json
 sed -i "s|SLACK_URL_PLACEHOLDER|$slack_URL|g" api/config.json
 sed -i "s/API_KEY_PLACEHOLDER/$password/g"  api/config.json
 
-cp leet_frontend/example.env.local leet_frontend/.env.local
-cp user_frontend/example.env.local user_frontend/.env.local
+
 
 # echo using $password $slack_URL $website_domain
 
@@ -51,7 +50,9 @@ else
 fi
 
 cat ./caddy/Caddyfile_template | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > ./caddy/Caddyfile
-
+# cp leet_frontend/example.env.local leet_frontend/.env.local
+cat leet_frontend/example.env.local | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > leet_frontend/.env.local
+cp user_frontend/example.env.local user_frontend/.env.local
 
 echo "[+] crating docker network if not exit"
 docker network create reverse_proxy_phishyfish
