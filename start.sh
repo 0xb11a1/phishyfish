@@ -52,7 +52,7 @@ fi
 cat ./caddy/Caddyfile_template | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > ./caddy/Caddyfile
 # cp leet_frontend/example.env.local leet_frontend/.env.local
 cat leet_frontend/example.env.local | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > leet_frontend/.env.local
-cp user_frontend/example.env.local user_frontend/.env.local
+cat user_frontend/example.env.local | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > user_frontend/.env.local
 
 echo "[+] crating docker network if not exit"
 docker network create reverse_proxy_phishyfish
