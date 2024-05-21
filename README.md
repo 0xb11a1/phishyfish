@@ -8,7 +8,7 @@ During one of the RedTeam assessments with my team, we wanted a quick way to byp
 
 # Features / TODO:
 
-- [x] Add Auto_mode: will try to automate the the process of OTP grapping submittion
+- [x] Add Auto_mode: will try to automate the the process of OTP grabbing and submitting
 - [x] On Auto_mode: saving user cookies and taking a screenshot for office and outlook pages
 - [x] simplify the installation process
 - [x] Add caddy as a reverse proxy
