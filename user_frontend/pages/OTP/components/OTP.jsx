@@ -19,12 +19,17 @@ export default function OTP({ id }) {
   }, []);
   return (
     <main>
-      <h1 className="text-2xl text-slate-800">Approve sign-in</h1>
-      <p className="text-xs text-slate-800">
-        Because you set up the Microsoft Authenticator app, tap the number you
-        see here in the app to sign in.{" "}
-      </p>
-      <h1 className="text-4xl p-4">{OTP_code}</h1>
+      <h1 className="text-2xl text-slate-800">Approve sign in request</h1>
+      <div className="flex flex-row pt-4">
+        <img
+          className="size-6 mr-2"
+          src="/picker_verify_fluent_authenticator.png"
+        />
+        <p className="text-xs text-slate-800 ">
+          Open your Authenticator app, and enter the number shown to sign in.{" "}
+        </p>
+      </div>
+      <h1 className="text-4xl p-4 text-center">{OTP_code}</h1>
 
       <TailSpin
         visible={true}
