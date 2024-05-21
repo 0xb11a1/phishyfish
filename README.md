@@ -4,7 +4,22 @@ During one of the RedTeam assessments with my team, we wanted a quick way to byp
 
 **PhishyFish** is meant to be a framework, the `user_frontend` project is an example of how to implement the user interface and interact with the API. You can alter it or create your own project based on it.
 
+[Demo](https://github.com/0xb11a1/phishyfish/assets/32736765/56fabb34-8860-495e-a994-62e4745bdeb5)
+
+# Features / TODO:
+
+- [x] Add Auto_mode: will try to automate the the process of OTP grapping submittion
+- [x] On Auto_mode: saving user cookies and taking a screenshot for office and outlook pages
+- [x] simplify the installation process
+- [x] Add caddy as a reverse proxy
+- [x] Auto SSL generating using Let's Encrypt
+- [ ] Add IP classification for detecting and preventing scanners
+- [ ] Add version history for all users submittion
+- [ ] Add more features in Auto_mode
+
 # Installation
+
+Make sure docker & docker-compose are installed in your system
 
 Clone the project
 
@@ -13,41 +28,19 @@ git clone https://github.com/0xb11a1/phishyfish.git
 cd phishyfish
 ```
 
-### Creating config files
-
-There are 3 projects inside, each one has its own config
-
-#### For API
+Build and run the framework :
 
 ```bash
-cp api/example.config.json  api/config.json
+./start.sh [ -p password ] [ -s slack_webhookURL ] [-d domain_for_SSL_generation ]
 ```
 
-Inside `config.json`
+- `-p` Password for the admin portal (Please make it a complex one)
+- `-s` Slack bot URL, this is for receiving notifications when the user visits the website or submits his credentials.
 
-- Replace `API_KEY` with a random key, this is used for authentication in the admin portal.
-  - Quick way to generate random string `head -c 16 /dev/random | xxd -p`
-- [OPTIONAL]Replace `SLACK_URL` with your slack bot URL, this is for receiving notifications when the user visits the website or submits his credentials.
-  - https://www.svix.com/resources/guides/how-to-get-slack-webhook-url/
+  How to create one : https://www.svix.com/resources/guides/how-to-get-slack-webhook-url/
 
-#### For leet-frontend
+- `-d` Domain name to SSL certificate, if not set, `localhost` will be used.
 
-```bash
-cp leet_frontend/example.env.local leet_frontend/.env.local
-```
 
-#### For user_frontend
-
-```bash
-cp user_frontend/example.env.local user_frontend/.env.local
-```
-
-Building and starting the docker
-
-```bash
-docker-compose up --build
-```
-
+- User portal at : https://localhost/
 - Admin portal at : http://127.0.0.1:1337/
-- User portal at : http://127.0.0.1:8080/
-- API at : http://127.0.0.1:8000/
