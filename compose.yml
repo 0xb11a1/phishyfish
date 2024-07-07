@@ -2,25 +2,69 @@ version: '3'
 services:
   leet_frontend:
     image: leet_frontend
+    container_name: leet_frontend
     build:
       context: ./leet_frontend
       dockerfile: Dockerfile
     ports:
       - "1337:3000"
+    networks:
+      - reverse_proxy_phishyfish
+      - internal
+    expose:
+      - 1337
   api:
-    image: leet-api
+    image: api_phishyfish
+    container_name: api_phishyfish
     build:
       context: ./api
       dockerfile: Dockerfile
     volumes:
       - ./api/db_file:/root/db/:z
+      - ./api/loot:/app/loot/:z
     ports:
       - "8000:8000"
     restart: always
+    networks:
+      - reverse_proxy_phishyfish
+      - internal
+    expose:
+      - 8000
   user-frontend:
     image: user-frontend
+    container_name: user_frontend
     build:
       context: ./user_frontend
       dockerfile: Dockerfile
     ports:
       - "8080:3000"
+    networks:
+      - reverse_proxy_phishyfish
+      - internal
+    expose:
+      - 8080
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - reverse_proxy_phishyfish
+      - internal
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:z
+      - ./caddy/site:/srv:z
+      - ./caddy/caddy_data:/data:z
+      - ./caddy/caddy_config:/config:z
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+    name: look-booky
+  reverse_proxy_phishyfish:
+    external: true

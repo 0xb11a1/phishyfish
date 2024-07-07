@@ -31,3 +31,6 @@ config.json
 
 # macOS
 .DS_Store
+loot/*
+test.py
+Venv/
