@@ -42,7 +42,7 @@ export default function Login() {
       password: password,
     };
     const res = await fetch(`${process.env.API_URL}/login/${id}`, {
-      method: "POSt",
+      method: "POST",
       cache: "no-cache",
       headers: {
         "Content-Type": "application/json",

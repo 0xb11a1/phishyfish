@@ -14,8 +14,9 @@ DEBUG = CONFIG["DEBUG"]
 
 
 def messageAdmin(admin_message):
-    if DEBUG:
-        return
+    # if DEBUG:
+    #     print(f"messaging admin: {admin_message}")
+    #     # return
     logging.log(logging.INFO, "messaging admin")
     try:
         r = requests.post(

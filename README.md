@@ -13,9 +13,18 @@ During one of the RedTeam assessments with my team, we wanted a quick way to byp
 - [x] simplify the installation process
 - [x] Add caddy as a reverse proxy
 - [x] Auto SSL generating using Let's Encrypt
-- [ ] Add IP classification for detecting and preventing scanners
 - [ ] Add version history for all users submittion
 - [ ] Add more features in Auto_mode
+- [ ] Add ability to block IP address based on (IP|Region|resident/Server) - IP only is done
+- [x] Better notification on slack
+- [x] Rewrite auto_login to use playwright
+- [X] Integrate cookie with cookie-editor
+- [x] Host in subdirectory
+- [ ] Add tracker id 
+- [ ] Change the API calls to be server side only 
+- [x] Rewrite the user_frontend in less stupid way - still some stupid stuff
+- [ ] Write some Documentation
+- [ ] Replace pull with websocket
 
 # Installation
 
