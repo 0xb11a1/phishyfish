@@ -1,0 +1,84 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #f3f4f7 0%, #d0d5de 100%);
+  }
+  
+  .box {
+    background-color: white;
+    padding: 40px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    width: 400px;
+    text-align: center;
+  }
+  
+  .microsoftLogo {
+    height: 30px;
+    margin-bottom: 20px;
+  }
+  
+  .h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .linkContainer {
+    text-align: left;
+    margin-bottom: 10px;
+  }
+  
+  .a {
+    text-decoration: none;
+    color: #0078d4;
+    font-size: 14px;
+  }
+  
+  .a span {
+    color: #0078d4;
+    font-weight: bold;
+  }
+  
+  .buttonContainer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .backButton {
+    background-color: #f3f3f3;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .nextButton {
+    background-color: #0078d4;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .signinOptions {
+    margin-top: 30px;
+  }
+  
+  .signinOptions a {
+    text-decoration: none;
+    font-size: 14px;
+    color: #0078d4;
+  }
+  
