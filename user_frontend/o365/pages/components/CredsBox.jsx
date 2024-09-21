@@ -1,4 +1,3 @@
-import logo from "../../public/logo.png";
 import Image from "next/image";
 export default function CredsBox({ curr_component }) {
   return (
@@ -26,7 +25,8 @@ export default function CredsBox({ curr_component }) {
         }}
       >
         <img
-          src="/internal/logo.png"
+          id="box-logo"
+          src="/internal/Microsoft-logo.png"
           style={{
             WebkitTextSizeAdjust: "100%",
             fontWeight: "400",
@@ -41,6 +41,7 @@ export default function CredsBox({ curr_component }) {
             maxWidth: "256px",
             height: "24px",
             marginBottom: "0.6rem",
+            position: "relative",
           }}
           alt="something"
         />
