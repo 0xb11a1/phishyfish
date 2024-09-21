@@ -1,21 +1,28 @@
 import React from "react";
-import { ThreeDots } from "react-loader-spinner";
+import Box from "@mui/material/Box";
+import LinearProgress from "@mui/material/LinearProgress";
 
 export default function Wait() {
   return (
-    <div className=" flex flex-col items-center justify-center">
-      <h1>Please Wait ...</h1>
+    <div className=" flex flex-col space-y-10 mt-4 justify-center">
+      <div
+        style={{
+          WebkitTextSizeAdjust: "100%",
+          direction: "ltr",
+          textAlign: "left",
+          lineHeight: "1.75rem",
+          color: "#1b1b1b",
+          fontSize: "1.5rem",
+          fontWeight: "600",
+          boxSizing: "border-box",
+        }}
+      >
+        Trying to sign you in
+      </div>
 
-      <ThreeDots
-        visible={true}
-        height="80"
-        width="80"
-        color="#0067b8"
-        radius="9"
-        ariaLabel="three-dots-loading"
-        wrapperStyle={{}}
-        wrapperClass=""
-      />
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
     </div>
   );
 }

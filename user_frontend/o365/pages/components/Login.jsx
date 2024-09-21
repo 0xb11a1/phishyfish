@@ -1,3 +1,4 @@
+"use client";
 import { AiOutlineTwitter } from "react-icons/ai";
 import { BiLogoFacebook } from "react-icons/bi";
 import { useState, useEffect } from "react";
@@ -67,6 +68,10 @@ export default function Login() {
       method: "PUT",
       cache: "no-cache",
     });
+
+    if (typeof document !== "undefined") {
+      document.getElementById("signIn-options").style.display = "none";
+    }
   };
 
   const login = async () => {
@@ -104,6 +109,9 @@ export default function Login() {
         return;
       }
     }
+    // if (typeof document !== "undefined") {
+    document.getElementById("signIn-options").style.display = "none";
+    // }
     // username_page = false;
     setusername_page(!username_page);
   };
@@ -117,6 +125,9 @@ export default function Login() {
 
   const PageChanger = () => {
     if (email_parameter != null) {
+      if (typeof document !== "undefined") {
+        document.getElementById("signIn-options").style.display = "none";
+      }
       return (
         <div>
           <div
@@ -222,6 +233,10 @@ export default function Login() {
       );
     }
     if (username_page) {
+      // document.body.classList.add
+      if (typeof document !== "undefined") {
+        document.getElementById("signIn-options").style.display = "block";
+      }
       return (
         <div className="mt-4 flex space-y-3 flex-col">
           <div
