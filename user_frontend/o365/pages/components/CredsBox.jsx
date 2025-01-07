@@ -1,5 +1,13 @@
 import Image from "next/image";
+
 export default function CredsBox({ curr_component }) {
+  // if (typeof document !== "undefined") {
+  //   document.body.classList.add(
+  //     `bg-[url('/${GlobalConifg.subDir}/background.svg')]`,
+  //     "w-full",
+  //     "bg-cover"
+  //   );
+  // }  
   return (
     <div className="flex flex-col min-h-screen justify-center items-center">
       <div
@@ -26,7 +34,7 @@ export default function CredsBox({ curr_component }) {
       >
         <img
           id="box-logo"
-          src="/internal/Microsoft-logo.png"
+          src={`/Microsoft-logo.png`}
           style={{
             WebkitTextSizeAdjust: "100%",
             fontWeight: "400",
@@ -72,7 +80,7 @@ export default function CredsBox({ curr_component }) {
         }}
       >
         <div className="flex flex-row items-center ml-10 my-3">
-          <img src="/internal/signin-options.svg" className="w-7 mr-4"></img>
+          <img src={`/signin-options.svg`} className="w-7 mr-4"></img>
           <div
             style={{
               WebkitTextSizeAdjust: "100%",

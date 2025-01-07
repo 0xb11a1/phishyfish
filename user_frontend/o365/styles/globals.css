@@ -17,5 +17,5 @@
 }
 
 body {
-  background-image: url('/internal/background.svg');
+  background-image: url("/background.svg");
 }

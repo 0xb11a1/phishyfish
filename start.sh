@@ -37,7 +37,7 @@ echo "[+] Generating the config files"
 cp api/example.config.json api/config.json
 sed -i "s|SLACK_URL_PLACEHOLDER|$slack_URL|g" api/config.json
 sed -i "s/API_KEY_PLACEHOLDER/$password/g"  api/config.json
-
+sed -i "s/DEBUG_PLACEHOLDER/false/g"  api/config.json
 
 
 # echo using $password $slack_URL $website_domain
@@ -58,17 +58,18 @@ fi
 cat ./caddy/Caddyfile_template | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > ./caddy/Caddyfile
 # cp leet_frontend/example.env.local leet_frontend/.env.local
 cat leet_frontend/example.env.local | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > leet_frontend/.env.local
-cat user_frontend/example.env.local | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > user_frontend/.env.local
+cat user_frontend/o365/example.env.local | sed "s/DOMAIN_PLACEHOLDER/$curr_domain/g" > user_frontend/o365/.env.local
 
 if [[ -z $sub_dir  ]];
 then 
     echo "[+] Hosting in root sub-directory"
+    sub_dir_escaped="NOSUBDIR"
 else
     echo "[+] Hosting in $sub_dir sub-directory"
+    sub_dir_escaped=$(printf '%s\n' "$sub_dir" | sed -e 's/[]\/$*.^[]/\\&/g');
 fi
 
-sub_dir_escaped=$(printf '%s\n' "$sub_dir" | sed -e 's/[]\/$*.^[]/\\&/g');
-sed -i "s/SUB_DIR_PLACEHOLDER/$sub_dir_escaped/g"  user_frontend/.env.local
+sed -i "s/SUB_DIR_PLACEHOLDER/$sub_dir_escaped/g"  user_frontend/o365/.env.local
 
 echo "[+] crating docker network if not exit"
 docker network create reverse_proxy_phishyfish

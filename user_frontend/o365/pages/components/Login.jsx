@@ -7,7 +7,8 @@ import { setCookie } from "cookies-next";
 import { getCookie } from "cookies-next";
 import arrow from "../../public/arrow.svg";
 import { useSearchParams } from "next/navigation";
-
+import Wait from "../OTP/components/Wait";
+import Blocked_page from "./Blocked_checker";
 export default function Login() {
   const router = useRouter();
   const [emailAddress, setemailAddress] = useState("");
@@ -19,9 +20,18 @@ export default function Login() {
   const searchParams = useSearchParams();
 
   console.log("oauth2 is :" + email_parameter);
-  const hello = async () => {
-    const cookie = getCookie("id");
+  const cookie_sec = getCookie("sec");
+  const cookie = getCookie("id");
 
+  useEffect(() => {
+    if (
+      (cookie_sec == null) &
+      (process.env.NEXT_PUBLIC_SUB_DIR != "NOSUBDIR")
+    ) {
+      router.push("/news");
+    }
+  }, []);
+  const hello = async () => {
     if (cookie == null) {
       try {
         const res = await fetch(`${process.env.API_URL}/hello`, {
@@ -162,7 +172,7 @@ export default function Login() {
                 }}
               >
                 <div className="flex px-20 mt-4 py-4 flex-row space-x-3 items-center hover:bg-gray-200">
-                  <img className="" src="/internal/picker_account.svg"></img>
+                  <img className="" src={`/picker_account.svg`}></img>
                   <div
                     style={{
                       WebkitTextSizeAdjust: "100%",
@@ -182,7 +192,7 @@ export default function Login() {
                     {email_parameter}
                   </div>
                   <img
-                    src="/internal/picker_more.svg"
+                    src={`/picker_more.svg`}
                     className="pr-20"
                     style={{ position: "absolute", right: "0" }}
                   ></img>
@@ -203,10 +213,7 @@ export default function Login() {
                 }}
               >
                 <div className="flex px-20  py-4 flex-row space-x-3 items-center hover:bg-gray-200">
-                  <img
-                    className=""
-                    src="/internal/picker_account_add.svg"
-                  ></img>
+                  <img className="" src={`/picker_account_add.svg`}></img>
                   <div
                     style={{
                       WebkitTextSizeAdjust: "100%",
@@ -441,15 +448,17 @@ export default function Login() {
         </div>
       );
     } else {
-      document.getElementById("box-logo").src = "/internal/company-logo.png";
+      document.getElementById("box-logo").src = `/company_logo.png`;
       document.body.classList.add(
-        "bg-[url('/internal/company_background.jpeg')]"
+        `bg-[url('/company_background.jpeg')]`,
+        "w-full",
+        "bg-cover"
       );
       return (
         <div className="flex flex-col space-y-7">
           <div className="flex flex-row space-x-2">
             {/* fix this to go back */}
-            <img src="/internal/arrow.svg" onClick={change_to_password}></img>
+            <img src={`/arrow.svg`} onClick={change_to_password}></img>
             <div
               style={{
                 WebkitTextSizeAdjust: "100%",
@@ -485,6 +494,7 @@ export default function Login() {
           <input
             placeholder="Password"
             value={password}
+            type="password"
             onChange={(e) => {
               setpassword(e.currentTarget.value);
             }}

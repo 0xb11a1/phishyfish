@@ -37,10 +37,15 @@ git clone https://github.com/0xb11a1/phishyfish.git
 cd phishyfish
 ```
 
+Customization:
+replace these two files to you coresponding target logo and wallpaper
+`user_frontend/o365/public/company_background.jpeg`
+`user_frontend/o365/public/company_logo.png`
+
 Build and run the framework :
 
 ```bash
-./start.sh [ -p password ] [ -s slack_webhookURL ] [-d domain_for_SSL_generation ]
+./start.sh [ -p password ] [ -s slack_webhookURL ] [-d domain_for_SSL_generation ] [-S internal ] 
 ```
 
 - `-p` Password for the admin portal (Please make it a complex one)
@@ -49,7 +54,24 @@ Build and run the framework :
   How to create one : https://www.svix.com/resources/guides/how-to-get-slack-webhook-url/
 
 - `-d` Domain name to SSL certificate, if not set, `localhost` will be used.
+- `-S` The subDirectory the application will be hosted on, this to avoids scanners that auto scans any new domain. if not set it will be hosted in /
 
 
-- User portal at : https://localhost/
-- Admin portal at : http://127.0.0.1:1337/
+# Development
+To set the environment for development tun `./dev_prep.sh` then run all three projects manully
+
+```bash
+# user_frontend
+cd user_frontend/o365
+npm run dev -- --port 3006
+
+# leet_frontend 
+cd leet_frontend 
+npm run dev -- --port 3005
+
+# API
+cd api
+pip3 install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+

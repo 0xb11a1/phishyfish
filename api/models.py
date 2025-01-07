@@ -21,3 +21,7 @@ class Blocked_IP(Base):
     __tablename__ = "blocked_ip"
     id = Column(Integer,primary_key=True, index=True,autoincrement=True)
     ip = Column(String)
+
+
+# TODO: move config to a table
+# class Config(Base):

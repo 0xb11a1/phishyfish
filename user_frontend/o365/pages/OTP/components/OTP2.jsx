@@ -37,7 +37,7 @@ export default function OTP2({ id }) {
       <div className="flex flex-row ">
         <img
           className="size-6 mr-2"
-          src="/internal/picker_verify_fluent_authenticator.png"
+          src={`/picker_verify_fluent_authenticator.png`}
           alt="something"
           height={150}
           width={200}

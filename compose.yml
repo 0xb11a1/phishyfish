@@ -34,7 +34,7 @@ services:
     image: user-frontend
     container_name: user_frontend
     build:
-      context: ./user_frontend
+      context: ./user_frontend/o365
       dockerfile: Dockerfile
     ports:
       - "8080:3000"

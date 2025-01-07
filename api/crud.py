@@ -62,7 +62,7 @@ def set_Cookie(db: Session, id: int, Cookie: str):
 
 
 def check_IfIPBlocked(db: Session, ip: str):
-    db_blcokedIP = db.query(models.Blocked_IP)
+    db_blcokedIP = db.query(models.Blocked_IP).filter(models.Blocked_IP.ip == ip)
     for row in db_blcokedIP.all():
         # check if CIDR or normal IP
         if "/" in row:

@@ -15,6 +15,6 @@ module.exports = {
     // Will be available on both server and client
     apiUrl: process.env.API_URL
   },
-  basePath: process.env.SUB_DIR,
-  assetPrefix: process.env.SUB_DIR
+  // basePath: process.env.SUB_DIR,
+  // assetPrefix: process.env.SUB_DIR
 };
