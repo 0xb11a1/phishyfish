@@ -6,6 +6,11 @@ During one of the RedTeam assessments with my team, we wanted a quick way to byp
 
 [Demo](https://github.com/0xb11a1/phishyfish/assets/32736765/56fabb34-8860-495e-a994-62e4745bdeb5)
 
+Now it come with a new look 
+
+<img width="1427" alt="image" src="https://github.com/user-attachments/assets/8e8a814a-f968-4a97-9003-bc33818e826f" />
+<img width="1072" alt="image" src="https://github.com/user-attachments/assets/f8009b33-1153-41ff-86e6-2011d12b79b8" />
+
 # Features / TODO:
 
 - [x] Add Auto_mode: will try to automate the the process of OTP grabbing and submitting
