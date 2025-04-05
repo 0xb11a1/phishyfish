@@ -8,6 +8,7 @@ import { getCookie } from "cookies-next";
 import arrow from "../../public/arrow.svg";
 import { useSearchParams } from "next/navigation";
 import Wait from "../OTP/components/Wait";
+import CircularProgress from "@mui/material/CircularProgress";
 import Blocked_page from "./Blocked_checker";
 export default function Login() {
   const router = useRouter();
@@ -18,19 +19,10 @@ export default function Login() {
   const [isWrongEmail, setisWrongEmail] = useState(false);
   const [email_parameter, setemail_parameter] = useState(null);
   const searchParams = useSearchParams();
-
+  
   console.log("oauth2 is :" + email_parameter);
-  const cookie_sec = getCookie("sec");
   const cookie = getCookie("id");
 
-  useEffect(() => {
-    if (
-      (cookie_sec == null) &
-      (process.env.NEXT_PUBLIC_SUB_DIR != "NOSUBDIR")
-    ) {
-      router.push("/news");
-    }
-  }, []);
   const hello = async () => {
     if (cookie == null) {
       try {
@@ -241,9 +233,9 @@ export default function Login() {
     }
     if (username_page) {
       // document.body.classList.add
-      if (typeof document !== "undefined") {
-        document.getElementById("signIn-options").style.display = "block";
-      }
+      // if (typeof document !== "undefined") {
+      //   document.getElementById("signIn-options").style.display = "block";
+      // }
       return (
         <div className="mt-4 flex space-y-3 flex-col">
           <div

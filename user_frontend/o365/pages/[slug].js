@@ -2,47 +2,42 @@ import { useRouter } from "next/router";
 import { setCookie } from "cookies-next";
 import Wait from "./OTP/components/Wait";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const SlugPage = ({ slug }) => {
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false); // State to manage the loading animation
 
-  // Client-side slug handling
-  const PageChanger = () => {
-    if (!slug) {
-      return (
-        <div className="flex items-center justify-center pt-5 ">
-          <CircularProgress size="10rem" />
-        </div>
-      );
-    }
-    
+  useEffect(() => {
     if (slug === process.env.NEXT_PUBLIC_SUB_DIR) {
+      setIsRedirecting(true);
       setCookie("sec", "aa", {
         maxAge: 60 * 60 * 24 * 30, // 30 days
         sameSite: "lax",
       });
-      useEffect(() => {
-        router.push("/");
-      }, []);
-    } else if (slug === "news") {
+      // TODO fix redirection
+      router.replace("/").then(() => {
+        setIsRedirecting(false);
+      });
+    }
+  }, [slug, router]); // Dependencies added to avoid infinite rerenders
+
+  const pageChanger = () => {
+    if (!slug || isRedirecting) {
       return (
-        <div className="flex items-center justify-center pt-5 ">
+        <div className="flex items-center justify-center pt-5">
           <CircularProgress size="10rem" />
         </div>
       );
     } else {
-      return <div>Not Found</div>;
+      router.push("../");
     }
   };
-
-  return <div>{PageChanger()}</div>;
 };
 
 export async function getStaticPaths() {
-  // Define paths for your dynamic routes. Adjust based on your needs.
   return {
-    paths: [], // Generate paths if needed, or leave empty for fallback behavior
+    paths: [], // Generate paths if needed
     fallback: "blocking", // Enable blocking fallback
   };
 }

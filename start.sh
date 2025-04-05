@@ -74,4 +74,4 @@ sed -i "s/SUB_DIR_PLACEHOLDER/$sub_dir_escaped/g"  user_frontend/o365/.env.local
 echo "[+] crating docker network if not exit"
 docker network create reverse_proxy_phishyfish
 echo "[+] Starting the docker"
-docker-compose up --build --remove-orphans
+docker compose up --build --remove-orphans
