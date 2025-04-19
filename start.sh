@@ -24,6 +24,7 @@ do
                 s) slack_URL=${OPTARG};;
                 d) website_domain=${OPTARG};;
                 S) sub_dir=${OPTARG};;
+                i) user_parm_id=${OPTARG};;
                 :) exit_abnormal;;
                 *) exit_abnormal;;
             esac
@@ -70,6 +71,17 @@ else
 fi
 
 sed -i "s/SUB_DIR_PLACEHOLDER/$sub_dir_escaped/g"  user_frontend/o365/.env.local
+
+
+if [[ -z $user_parm_id ]];
+then 
+    echo "[+] Setting up without user tracking via id"
+   
+else
+    echo "[+] Setting user parameter to $user_parm_id"`
+    sed -i "s/USER_PARAM_PLACEHOLDER/$user_parm_id/g"  user_frontend/o365/.env.local`
+fi
+
 
 echo "[+] crating docker network if not exit"
 docker network create reverse_proxy_phishyfish

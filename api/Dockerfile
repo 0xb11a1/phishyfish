@@ -11,4 +11,4 @@ RUN playwright install-deps
 RUN playwright install chromium
 
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "app.py"]

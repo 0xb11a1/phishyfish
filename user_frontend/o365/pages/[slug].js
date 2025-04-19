@@ -1,56 +1,62 @@
-import { useRouter } from "next/router";
 import { setCookie } from "cookies-next";
-import Wait from "./OTP/components/Wait";
-import CircularProgress from "@mui/material/CircularProgress";
-import { useEffect, useState } from "react";
 
-const SlugPage = ({ slug }) => {
-  const router = useRouter();
-  const [isRedirecting, setIsRedirecting] = useState(false); // State to manage the loading animation
-
-  useEffect(() => {
-    if (slug === process.env.NEXT_PUBLIC_SUB_DIR) {
-      setIsRedirecting(true);
-      setCookie("sec", "aa", {
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-        sameSite: "lax",
-      });
-      // TODO fix redirection
-      router.replace("/").then(() => {
-        setIsRedirecting(false);
-      });
-    }
-  }, [slug, router]); // Dependencies added to avoid infinite rerenders
-
-  const pageChanger = () => {
-    if (!slug || isRedirecting) {
-      return (
-        <div className="flex items-center justify-center pt-5">
-          <CircularProgress size="10rem" />
-        </div>
-      );
-    } else {
-      router.push("../");
-    }
-  };
-};
-
-export async function getStaticPaths() {
-  return {
-    paths: [], // Generate paths if needed
-    fallback: "blocking", // Enable blocking fallback
-  };
+function SlugPage() {
+  return null;
 }
 
-export async function getStaticProps({ params }) {
+export async function getServerSideProps(context) {
+  const { params, req, res, query } = context;
   const { slug } = params;
+  // const redirect = query.redirect || null;
 
-  // Pass the slug to the page as props
-  return {
-    props: {
-      slug: slug || null,
-    },
+  const buildQueryString = (queryObj) => {
+    const params = new URLSearchParams(queryObj);
+    return params.toString() ? `?${params.toString()}` : "";
   };
+
+  const queryString = buildQueryString(query);
+
+  if (slug === process.env.NEXT_PUBLIC_SUB_DIR) {
+    // Set the cookie on the server side
+    setCookie("sec", "aa", {
+      req,
+      res,
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      sameSite: "lax",
+    });
+
+    // if (redirect) {
+    //   return {
+    //     redirect: {
+    //       destination: `/${queryString}`,
+    //       permanent: false,
+    //     },
+    //   };
+    // }
+
+    return {
+      redirect: {
+        destination: `/${queryString}`,
+        permanent: false,
+      },
+    };
+  } else {
+    // if (redirect) {
+    //   return {
+    //     redirect: {
+    //       destination: `../${queryString}`,
+    //       permanent: false,
+    //     },
+    //   };
+    // }
+
+    return {
+      redirect: {
+        destination: `../${queryString}`,
+        permanent: false,
+      },
+    };
+  }
 }
 
 export default SlugPage;

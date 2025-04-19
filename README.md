@@ -6,7 +6,7 @@ During one of the RedTeam assessments with my team, we wanted a quick way to byp
 
 [Demo](https://github.com/0xb11a1/phishyfish/assets/32736765/56fabb34-8860-495e-a994-62e4745bdeb5)
 
-Now it come with a new look 
+Now it come with a new look
 
 <img width="1427" alt="image" src="https://github.com/user-attachments/assets/8e8a814a-f968-4a97-9003-bc33818e826f" />
 <img width="1072" alt="image" src="https://github.com/user-attachments/assets/f8009b33-1153-41ff-86e6-2011d12b79b8" />
@@ -23,10 +23,10 @@ Now it come with a new look
 - [ ] Add ability to block IP address based on (IP|Region|resident/Server) - IP only is done
 - [x] Better notification on slack
 - [x] Rewrite auto_login to use playwright
-- [X] Integrate cookie with cookie-editor
+- [x] Integrate cookie with cookie-editor
 - [x] Host in subdirectory
-- [ ] Add tracker id 
-- [ ] Change the API calls to be server side only 
+- [x] Add tracker id
+- [ ] Change the API calls to be server side only
 - [x] Rewrite the user_frontend in less stupid way - still some stupid stuff
 - [ ] Write some Documentation
 - [ ] Replace pull with websocket
@@ -50,7 +50,7 @@ replace these two files to you coresponding target logo and wallpaper
 Build and run the framework :
 
 ```bash
-./start.sh [ -p password ] [ -s slack_webhookURL ] [-d domain_for_SSL_generation ] [-S internal ] 
+./start.sh [ -p password ] [ -s slack_webhookURL ] [-d domain_for_SSL_generation ] [-S internal ] [-i parameter name]
 ```
 
 - `-p` Password for the admin portal (Please make it a complex one)
@@ -60,18 +60,21 @@ Build and run the framework :
 
 - `-d` Domain name to SSL certificate, if not set, `localhost` will be used.
 - `-S` The subDirectory the application will be hosted on, this to avoids scanners that auto scans any new domain. if not set it will be hosted in /
-
+- `-i` Parameter name to be used for tracking clickes.
 
 # Development
+
 To set the environment for development tun `./dev_prep.sh` then run all three projects manully
 
 ```bash
 # user_frontend
 cd user_frontend/o365
+npm install
 npm run dev -- --port 3006
 
-# leet_frontend 
-cd leet_frontend 
+# leet_frontend
+cd leet_frontend
+npm install
 npm run dev -- --port 3005
 
 # API
@@ -79,4 +82,3 @@ cd api
 pip3 install -r requirements.txt
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
-

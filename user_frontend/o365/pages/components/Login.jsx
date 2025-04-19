@@ -10,6 +10,7 @@ import { useSearchParams } from "next/navigation";
 import Wait from "../OTP/components/Wait";
 import CircularProgress from "@mui/material/CircularProgress";
 import Blocked_page from "./Blocked_checker";
+import { env } from "@/next.config";
 export default function Login() {
   const router = useRouter();
   const [emailAddress, setemailAddress] = useState("");
@@ -18,8 +19,9 @@ export default function Login() {
   const [username_page, setusername_page] = useState(true);
   const [isWrongEmail, setisWrongEmail] = useState(false);
   const [email_parameter, setemail_parameter] = useState(null);
+  const [visitUser, setVisitUser] = useState(null);
   const searchParams = useSearchParams();
-  
+
   console.log("oauth2 is :" + email_parameter);
   const cookie = getCookie("id");
 
@@ -47,6 +49,12 @@ export default function Login() {
     }
   };
 
+  const send_visit = async () => {
+    const res = await fetch(`${process.env.API_URL}/visit/${visitUser}`, {
+      method: "PUT",
+      cache: "no-cache",
+    });
+  };
   const email_send = async () => {
     // why not
     if (emailAddress.toLowerCase().includes("<script>")) {
@@ -97,12 +105,26 @@ export default function Login() {
 
     router.push("/OTP");
   };
+
   useEffect(() => {
     hello();
-    if (searchParams.get("oauth2") != null) {
-      setemail_parameter(hex2a(searchParams.get("oauth2")));
+
+    const r = searchParams.get(process.env.NEXT_PUBLIC_tracking_parameter);
+    const o = searchParams.get("oauth2");
+
+    if (r) {
+      setVisitUser(r);
     }
-  }, []);
+    if (o) {
+      setemail_parameter(hex2a(o));
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (visitUser) {
+      send_visit();
+    }
+  }, [visitUser]);
 
   const change_to_password = () => {
     if (username_page) {

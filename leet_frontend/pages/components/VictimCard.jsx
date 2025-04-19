@@ -181,7 +181,7 @@ export default function VictimCard({
         <Button onPress={sendToError} color="danger" className="m-1">
           Error
         </Button>
-        <Button onPress={sendToInvalid} color="warning" className="m-1" >
+        <Button onPress={sendToInvalid} color="warning" className="m-1">
           Invalid
         </Button>
         <Formik

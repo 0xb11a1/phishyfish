@@ -14,13 +14,19 @@ class User(Base):
     password = Column(String)
     action = Column(String, default="wait")
     OTP = Column(String)
-    Cookies = Column(String,default="None")
+    Cookies = Column(String, default="None")
 
 
 class Blocked_IP(Base):
     __tablename__ = "blocked_ip"
-    id = Column(Integer,primary_key=True, index=True,autoincrement=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     ip = Column(String)
+
+
+class Visitor(Base):
+    __tablename__ = "visitors"
+    id = Column(String, primary_key=True, index=True)
+    visit_count = Column(Integer, default=1)
 
 
 # TODO: move config to a table

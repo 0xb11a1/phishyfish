@@ -63,14 +63,17 @@ def set_Cookie(db: Session, id: int, Cookie: str):
 
 def check_IfIPBlocked(db: Session, ip: str):
     db_blcokedIP = db.query(models.Blocked_IP).filter(models.Blocked_IP.ip == ip)
-    for row in db_blcokedIP.all():
-        # check if CIDR or normal IP
-        if "/" in row:
-            if ipaddress.IPv4Address(ip) in ipaddress.IPv4Network(row):
-                return True
-        else:
-            if row == ip:
-                return True
+    try:
+        for row in db_blcokedIP.all():
+            # check if CIDR or normal IP
+            if "/" in row:
+                if ipaddress.IPv4Address(ip) in ipaddress.IPv4Network(row):
+                    return True
+            else:
+                if row == ip:
+                    return True
+    except:
+        pass
     return False
 
 
@@ -105,3 +108,20 @@ def get_users(db: Session, skip: int = 0):
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
+
+
+def set_visitor(db: Session, id: str):
+    db_visitor = db.query(models.Visitor).filter(models.Visitor.id == id).first()
+    if not db_visitor:
+        db_newVisitor = models.Visitor(id=id)
+        db.add(db_newVisitor)
+    else:
+        db_visitor.visit_count = db_visitor.visit_count + 1
+        db.add(db_visitor)
+    db.commit()
+    # db.refresh(db_visitor)
+    # return db_visitor
+
+
+def get_visitors(db: Session, skip: int = 0):
+    return db.query(models.Visitor).all()

@@ -104,7 +104,6 @@ function ConfigView() {
           </Form>
         </Formik>
       </div>
-      <hr class="h-px my-8 bg-gray-600 border-0" />
     </div>
   );
 }

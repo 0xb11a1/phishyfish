@@ -2,11 +2,10 @@ import Image from "next/image";
 import Login from "./components/Login";
 import React from "react";
 import CredsBox from "./components/CredsBox";
-import Blocked_page from "./components/Blocked_checker";
+import Block_page from "./components/block_page";
 import getConfig from "next/config";
 import { getCookie } from "cookies-next";
-// import { useUrl } from "nextjs-current-url";
-// import { useRouter } from "next/router";
+
 
 export async function getServerSideProps({ req }) {
   const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
@@ -41,7 +40,7 @@ export default function Home({ repo }) {
     // return <div>path is : {router.asPath}</div>;
     
     if ((repo.stats == "blocked")) {
-      return <Blocked_page />;
+      return <Block_page />;
     } else {
       return <CredsBox curr_component={<Login />} />;
     }

