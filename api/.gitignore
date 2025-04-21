@@ -34,3 +34,4 @@ config.json
 loot/*
 test.py
 Venv/
+requests.log

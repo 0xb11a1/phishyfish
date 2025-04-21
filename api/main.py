@@ -27,6 +27,7 @@ import threading
 from queue import Queue
 import uvicorn
 import base64
+from starlette.middleware.base import BaseHTTPMiddleware
 
 AUTO_MODE = False
 
@@ -41,6 +42,41 @@ else:
 
 app.mount("/api", app)
 
+
+# --- Request Logger Middleware ---
+class RequestLoggerMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        try:
+            body = await request.body()
+            body_data = body.decode("utf-8")
+        except Exception:
+            body_data = "<Failed to decode body>"
+
+        headers = dict(request.headers)
+        ip = request.client.host if request.client else "unknown"
+
+        log_data = {
+            "ip": ip,
+            "method": request.method,
+            "url": str(request.url),
+            "headers": headers,
+            "body": body_data,
+        }
+
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(message)s",
+            handlers=[logging.FileHandler("requests.log"), logging.StreamHandler()],
+        )
+        logging.info(json.dumps(log_data, indent=2))
+        response = await call_next(request)
+        return response
+
+
+# Add the request logging middleware
+app.add_middleware(RequestLoggerMiddleware)
+
+# --- CORS setup ---
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
