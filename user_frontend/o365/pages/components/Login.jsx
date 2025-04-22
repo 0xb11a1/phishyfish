@@ -33,6 +33,10 @@ export default function Login() {
           cache: "no-cache",
         });
         res.text().then((text) => {
+          // dirty tmp fix if it failed
+          if (isNaN(+text)) {
+            text = "11111111111";
+          }
           setid(text);
           setCookie("id", text, {
             res,

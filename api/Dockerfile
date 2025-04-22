@@ -11,4 +11,4 @@ RUN playwright install-deps
 RUN playwright install chromium
 
 
-CMD ["python", "app.py"]
+CMD ["python", "main.py"]
