@@ -417,4 +417,14 @@ def get_automode(request: Request, db: Session = Depends(get_db)):
 
 
 if __name__ == "__main__":
+    # quick dirty fix for a wierd error where /hello result sometime in firefox for "details not found"
+    try:
+        db: Session = next(get_db())
+        new_lovelyclient = models.User(
+            id=11111111111, ip="127.0.0.1", user_agent="default"
+        )
+        crud.create_user(db, new_lovelyclient)
+    except:
+        print("Default fallback user is already added")
+        pass
     uvicorn.run(app, host="0.0.0.0", port=8000)
