@@ -8,6 +8,7 @@ import { getCookie } from "cookies-next";
 import Wait from "./components/Wait";
 import CredsBox from "../components/CredsBox";
 import { useRouter } from "next/router";
+import Timeout from "./components/Timeout";
 export default function Home() {
   const router = useRouter();
   var id = getCookie("id");
@@ -42,6 +43,8 @@ export default function Home() {
       return <OTP id={id} />;
     } else if (currAction == "OTP2") {
       return <OTP2 id={id} />;
+    } else if (currAction == "timeout") {
+      return <Timeout id={id} />;
     } else if (currAction == "dummyPage") {
       router.push("../Home");
     }

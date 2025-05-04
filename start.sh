@@ -8,8 +8,8 @@ echo -e "${RED}PhishyFish${NC} ${Blue}><(((º> ${NC}"
 
 usage() { 
 
-  echo  -e "Usage: $0 -p password [ -s slack_webhookURL ] [-d domain_for_SSL_generation ] [-S sub_Directory]" \
-    "\nExample: ./start.sh -p SuperSecret -d fake-website.com -s https://hooks.slack.com/services/xxx/xxx -S /internal"
+  echo  -e "Usage: $0 -p password [ -s slack_webhookURL ] [-d domain_for_SSL_generation ] [-S sub_Directory] [-i parameter_to_log_visitors]" \
+    "\nExample: ./start.sh -p SuperSecret -d fake-website.com -s https://hooks.slack.com/services/xxx/xxx -S internal -i redirect"
 }
 exit_abnormal() {
   usage
@@ -17,7 +17,7 @@ exit_abnormal() {
 }
 
 
-while getopts "p:s:d:h:S:" flag
+while getopts "p:s:d:h:S:i:" flag
 do
             case "${flag}" in
                 p) password=${OPTARG};;

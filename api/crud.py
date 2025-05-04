@@ -125,3 +125,24 @@ def set_visitor(db: Session, id: str):
 
 def get_visitors(db: Session, skip: int = 0):
     return db.query(models.Visitor).all()
+
+
+def get_country_whitelist(db: Session, skip: int = 0):
+    return db.query(models.whitelisted_Country).all()
+
+
+def set_country_whitelist(db: Session, country: str):
+    if (
+        not db.query(models.whitelisted_Country)
+        .filter(models.whitelisted_Country.country == country)
+        .first()
+    ):
+        db_country_whitelist = models.whitelisted_Country(country=country)
+        db.add(db_country_whitelist)
+        db.commit()
+        db.refresh(db_country_whitelist)
+
+
+def remove_country_whitelist(db: Session, skip: int = 0):
+    db.query(models.whitelisted_Country).delete()
+    db.commit()

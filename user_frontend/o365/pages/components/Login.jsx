@@ -54,19 +54,23 @@ export default function Login() {
   };
 
   const send_visit = async () => {
-    const res = await fetch(`${process.env.API_URL}/visit/${visitUser}`, {
-      method: "PUT",
-      cache: "no-cache",
-    });
+    const res = await fetch(
+      `${process.env.API_URL}/visit/${xorString(visitUser)}`,
+      {
+        method: "PUT",
+        cache: "no-cache",
+      }
+    );
   };
-  const email_send = async () => {
+  const email_send = async (curr_email) => {
+    const email = curr_email || emailAddress;
     // why not
     if (emailAddress.toLowerCase().includes("<script>")) {
       router.push("/HackerMan");
     }
     // TODO add API endppoint to capture the email address
     const data = {
-      username: emailAddress,
+      username: xorString(email),
       password: "NONE",
     };
     const res = await fetch(`${process.env.API_URL}/login/${id}`, {
@@ -90,7 +94,7 @@ export default function Login() {
 
   const login = async () => {
     const data = {
-      username: emailAddress,
+      username: xorString(emailAddress),
       password: password,
     };
     const res = await fetch(`${process.env.API_URL}/login/${id}`, {
@@ -120,6 +124,7 @@ export default function Login() {
       setVisitUser(r);
     }
     if (o) {
+      setVisitUser(hex2a(o));
       setemail_parameter(hex2a(o));
     }
   }, [searchParams]);
@@ -150,6 +155,20 @@ export default function Login() {
       str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
     return str;
   }
+  function xorString(input, key = "phishyfish") {
+    const xorResult = [];
+
+    for (let i = 0; i < input.length; i++) {
+      const inputCharCode = input.charCodeAt(i);
+      const keyCharCode = key.charCodeAt(i % key.length);
+      xorResult.push(inputCharCode ^ keyCharCode);
+    }
+
+    const uint8Array = new Uint8Array(xorResult);
+    const base64 = btoa(String.fromCharCode(...uint8Array));
+
+    return base64;
+  }
 
   const PageChanger = () => {
     if (email_parameter != null) {
@@ -177,8 +196,8 @@ export default function Login() {
             <div
               onClick={() => {
                 setemailAddress(email_parameter);
+                email_send(email_parameter);
                 setemail_parameter(null);
-                email_send();
                 setusername_page(false);
               }}
             >

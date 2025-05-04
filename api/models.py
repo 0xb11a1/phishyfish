@@ -28,6 +28,16 @@ class Visitor(Base):
     id = Column(String, primary_key=True, index=True)
     visit_count = Column(Integer, default=1)
 
+class Blocked_County(Base):
+    __tablename__ = "blocked_county"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    county = Column(String)
+
+
+class whitelisted_Country(Base):
+    __tablename__ = "whitelisted_county"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    country = Column(String)
 
 # TODO: move config to a table
 # class Config(Base):
