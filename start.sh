@@ -86,4 +86,13 @@ fi
 echo "[+] crating docker network if not exit"
 docker network create reverse_proxy_phishyfish
 echo "[+] Starting the docker"
-docker compose up --build --remove-orphans
+if docker compose version &> /dev/null; then
+    echo "[+] Using docker compose"
+    docker compose up --build --remove-orphans
+elif command -v docker-compose &> /dev/null; then
+    echo "[+] Using docker-compose"
+    docker-compose up --build --remove-orphans
+else
+    echo "[-] Neither docker-compose nor docker compose is available."
+    exit 1
+fi
