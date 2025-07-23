@@ -147,11 +147,21 @@ class auto_login:
                 # continue
             if "Verify your identity" in page_content:
                 self.send_message("Suspicious_activity_detected")
-                page.locator('xpath=//*[@id="idDiv_SAOTCS_Proofs"]/div[1]/div').click()
+                page.locator('//*[@id="idDiv_SAOTCS_Proofs"]/div[2]/div').click()
             if "Open your Authenticator app, and enter the number shown to sign in" in page.content():
                 # Get the OTP
                 self.OTP = page.locator("#idRichContext_DisplaySign").text_content()
                 self.send_message(msg="OTP_code", data=self.OTP)
+            if "Enter the code displayed in the Microsoft" in page_content:
+                self.send_message(msg="OTP2_code")
+                time.sleep(3)
+                
+                curr_otp = self.q.get()
+                page.get_by_placeholder("Code").click()
+                page.get_by_placeholder("Code").fill(curr_otp)
+                page.get_by_role("button", name="Verify").click()
+                    
+
         # --------------------- Cookies
         self.send_message("Getting cookies")
         self.cookie = self.fix_cookie(context.cookies())

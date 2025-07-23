@@ -34,7 +34,7 @@ AUTO_MODE = False
 api_key_header = APIKeyHeader(name="X-API-Key")
 
 models.Base.metadata.create_all(bind=engine)
-
+opt_codes = {}
 if DEBUG:
     app = FastAPI()
 else:
@@ -280,7 +280,17 @@ def auto_mode_func_listner(q, request, id):
             set_action_abstracted(id=id, action="invalid")
         elif curr_stat["msg"] == "OTP_timeout":
             set_action_abstracted(id=id, action="timeout")
-
+        elif curr_stat["msg"] == "OTP2_code":
+            set_action_abstracted(id=id, action="OTP2")
+            while True :
+                if id in opt_codes:
+                    q.put(opt_codes[id])
+                    time.sleep(3)
+                    break
+                else:
+                    time.sleep(1)
+                    continue
+            
         if curr_stat["type"] == "internal":
             if curr_stat["msg"] == "cookies":
                 db: Session = next(get_db())
@@ -411,8 +421,11 @@ def get_OTP(
 
 
 def set_OPT_abstracted(id, OTP):
+    global opt_codes
+    opt_codes[id] = OTP
     db: Session = next(get_db())
     db_user = crud.set_OTP(db, id, OTP)
+    
     if not db_user:
         return '{"status":"Error"}'
 
