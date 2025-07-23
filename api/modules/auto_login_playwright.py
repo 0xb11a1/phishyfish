@@ -112,35 +112,46 @@ class auto_login:
         
         # check if OTP present:
         
-        if "Open your Authenticator app, and enter the number shown to sign in" in page.content():
-            # Get the OTP
-            self.OTP = page.locator("#idRichContext_DisplaySign").text_content()
-            self.send_message(msg="OTP_code", data=self.OTP)
+        # if "Open your Authenticator app, and enter the number shown to sign in" in page.content():
+        #     # Get the OTP
+        #     self.OTP = page.locator("#idRichContext_DisplaySign").text_content()
+        #     self.send_message(msg="OTP_code", data=self.OTP)
             
             # Waiting for an action to happen
+        while True:
+            time.sleep(1)
             while True:
-                time.sleep(1)
-                while True:
-                    # Yes this is the best solution that i con think of for this error :) 
-                    # Page.content: Unable to retrieve content because the page is navigating and changing the content.
-                    try:
-                        page_content = page.content()
-                        break
-                    except:
-                        pass
-                if "Stay signed in?" in page_content:
-                    # an extra wait to for the button to become clickable
-                    time.sleep(2) 
-                    page.locator("#idSIButton9").click()
-                    self.send_message("OTP_submited_stay_signedin_clicked")
+                # Yes this is the best solution that i con think of for this error :) 
+                # Page.content: Unable to retrieve content because the page is navigating and changing the content.
+                try:
+                    page_content = page.content()
                     break
-                if "We didn't hear from you" in page_content:
-                    self.send_message("OTP_timeout")
-                    return
-                if "Welcome to Microsoft 365" in page_content:
-                    self.send_message("OTP_submited")
-                    break 
-
+                except:
+                    pass
+            if "Stay signed in?" in page_content:
+                # an extra wait to for the button to become clickable
+                time.sleep(2) 
+                page.locator("#idSIButton9").click()
+                self.send_message("OTP_submited_stay_signedin_clicked")
+                break
+            if "We didn't hear from you" in page_content:
+                self.send_message("OTP_timeout")
+                return
+            if "Welcome to Microsoft 365" in page_content:
+                self.send_message("OTP_submited")
+                break
+            if "Suspicious activity detected" in page_content:
+                time.sleep(2)
+                self.send_message("Suspicious_activity_detected")
+                page.locator("#idSIButton9").click()
+                # continue
+            if "Verify your identity" in page_content:
+                self.send_message("Suspicious_activity_detected")
+                page.locator('xpath=//*[@id="idDiv_SAOTCS_Proofs"]/div[1]/div').click()
+            if "Open your Authenticator app, and enter the number shown to sign in" in page.content():
+                # Get the OTP
+                self.OTP = page.locator("#idRichContext_DisplaySign").text_content()
+                self.send_message(msg="OTP_code", data=self.OTP)
         # --------------------- Cookies
         self.send_message("Getting cookies")
         self.cookie = self.fix_cookie(context.cookies())
