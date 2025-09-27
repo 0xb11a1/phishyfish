@@ -29,7 +29,6 @@ import uvicorn
 import base64
 from starlette.middleware.base import BaseHTTPMiddleware
 
-AUTO_MODE = False
 
 api_key_header = APIKeyHeader(name="X-API-Key")
 
@@ -229,7 +228,7 @@ def login(
     messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
     messageadmin_thread.start()
 
-    if AUTO_MODE:
+    if crud.get_config_automode(db):
         q = Queue()
         auto_func = threading.Thread(
             target=auto_mode_func,
@@ -460,23 +459,24 @@ def get_User(id: int, request: Request, db: Session = Depends(get_db)):
 
 @app.put("/automode/{mode}", dependencies=[Depends(get_api_key)])
 def set_automode(mode: str, request: Request, db: Session = Depends(get_db)):
-    global AUTO_MODE
-    # not sure why i didn't with this long code, but i'm lazy to change it
+    
     if mode == "true":
-        AUTO_MODE = True
+        automode = True
     else:
-        AUTO_MODE = False
+        automode = False
+    crud.set_config_automode(db,automode)
 
 
 @app.get("/automode", dependencies=[Depends(get_api_key)])
 def get_automode(request: Request, db: Session = Depends(get_db)):
-    return json.dumps({"automode": str(AUTO_MODE)})
+    return json.dumps({"automode": str(crud.get_config_automode(db))})
 
 
 if __name__ == "__main__":
     # quick dirty fix for a wierd error where /hello result sometime in firefox for "details not found"
+    db: Session = next(get_db())
+    crud.set_config_automode(db,False)
     try:
-        db: Session = next(get_db())
         new_lovelyclient = models.User(
             id=11111111111, ip="127.0.0.1", user_agent="default"
         )
@@ -484,4 +484,6 @@ if __name__ == "__main__":
     except:
         print("Default fallback user is already added")
         pass
+    
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

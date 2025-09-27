@@ -39,5 +39,11 @@ class whitelisted_Country(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     country = Column(String)
 
+# TODO: switch to yaml file later 
+class Config(Base):
+    __tablename__ = "Config"
+    id = Column(Integer,primary_key=True)
+    automode = Column(Boolean,default=False)
+
 # TODO: move config to a table
 # class Config(Base):
