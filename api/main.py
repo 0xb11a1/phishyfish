@@ -475,7 +475,7 @@ def get_automode(request: Request, db: Session = Depends(get_db)):
 if __name__ == "__main__":
     # quick dirty fix for a wierd error where /hello result sometime in firefox for "details not found"
     db: Session = next(get_db())
-    crud.set_config_automode(db,False)
+    crud.start_config(db)
     try:
         new_lovelyclient = models.User(
             id=11111111111, ip="127.0.0.1", user_agent="default"

@@ -156,6 +156,14 @@ def set_config_automode(db: Session, automode: bool):
     db.add(db_user)
     db.commit()
 
+def start_config(db: Session):
+    db_user = db.query(models.Config).first()
+    if not db_user:
+        db_user = models.Config()
+    else:
+        return
+    db.add(db_user)
+    db.commit()
 
 def remove_country_whitelist(db: Session, skip: int = 0):
     db.query(models.whitelisted_Country).delete()

