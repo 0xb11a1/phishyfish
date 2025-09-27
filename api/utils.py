@@ -1,6 +1,7 @@
 import requests
 import json
 import logging
+import base64
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
@@ -14,8 +15,9 @@ DEBUG = CONFIG["DEBUG"]
 
 
 def messageAdmin(admin_message):
-    if DEBUG:
-        return
+    # if DEBUG:
+    #     print(f"messaging admin: {admin_message}")
+    #     # return
     logging.log(logging.INFO, "messaging admin")
     try:
         r = requests.post(
@@ -25,3 +27,12 @@ def messageAdmin(admin_message):
         )
     except:
         pass
+
+
+def xorString(input, key="phishyfish"):
+    input_dec = base64.b64decode(input)
+    ans = ""
+    for i in range(len(input_dec)):
+        ans += chr(input_dec[i] ^ ord(key[i % len(key)]))
+
+    return ans

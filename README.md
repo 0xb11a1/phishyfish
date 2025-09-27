@@ -6,6 +6,11 @@ During one of the RedTeam assessments with my team, we wanted a quick way to byp
 
 [Demo](https://github.com/0xb11a1/phishyfish/assets/32736765/56fabb34-8860-495e-a994-62e4745bdeb5)
 
+Now it come with a new look
+
+<img width="1427" alt="image" src="https://github.com/user-attachments/assets/8e8a814a-f968-4a97-9003-bc33818e826f" />
+<img width="1072" alt="image" src="https://github.com/user-attachments/assets/f8009b33-1153-41ff-86e6-2011d12b79b8" />
+
 # Features / TODO:
 
 - [x] Add Auto_mode: will try to automate the the process of OTP grabbing and submitting
@@ -13,9 +18,18 @@ During one of the RedTeam assessments with my team, we wanted a quick way to byp
 - [x] simplify the installation process
 - [x] Add caddy as a reverse proxy
 - [x] Auto SSL generating using Let's Encrypt
-- [ ] Add IP classification for detecting and preventing scanners
 - [ ] Add version history for all users submittion
 - [ ] Add more features in Auto_mode
+- [ ] Add ability to block IP address based on (IP|Region|resident/Server) - IP only is done
+- [x] Better notification on slack
+- [x] Rewrite auto_login to use playwright
+- [x] Integrate cookie with cookie-editor
+- [x] Host in subdirectory
+- [x] Add tracker id
+- [ ] Change the API calls to be server side only
+- [x] Rewrite the user_frontend in less stupid way - still some stupid stuff
+- [ ] Write some Documentation
+- [ ] Replace pull with websocket
 
 # Installation
 
@@ -28,10 +42,15 @@ git clone https://github.com/0xb11a1/phishyfish.git
 cd phishyfish
 ```
 
+Customization:
+replace these two files to you coresponding target logo and wallpaper
+`user_frontend/o365/public/company_background.jpeg`
+`user_frontend/o365/public/company_logo.png`
+
 Build and run the framework :
 
 ```bash
-./start.sh [ -p password ] [ -s slack_webhookURL ] [-d domain_for_SSL_generation ]
+./start.sh [ -p password ] [ -s slack_webhookURL ] [-d domain_for_SSL_generation ] [-S internal ] [-i parameter name]
 ```
 
 - `-p` Password for the admin portal (Please make it a complex one)
@@ -40,7 +59,26 @@ Build and run the framework :
   How to create one : https://www.svix.com/resources/guides/how-to-get-slack-webhook-url/
 
 - `-d` Domain name to SSL certificate, if not set, `localhost` will be used.
+- `-S` The subDirectory the application will be hosted on, this to avoids scanners that auto scans any new domain. if not set it will be hosted in /
+- `-i` Parameter name to be used for tracking clickes.
 
+# Development
 
-- User portal at : https://localhost/
-- Admin portal at : http://127.0.0.1:1337/
+To set the environment for development tun `./dev_prep.sh` then run all three projects manully
+
+```bash
+# user_frontend
+cd user_frontend/o365
+npm install
+npm run dev -- --port 3006
+
+# leet_frontend
+cd leet_frontend
+npm install
+npm run dev -- --port 3005
+
+# API
+cd api
+pip3 install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```

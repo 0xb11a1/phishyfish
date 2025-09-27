@@ -19,7 +19,7 @@ export default function Login() {
       <h1 className="text-white">Your super secret password.</h1>
       <input
         className="m-3 text-sm w-2/3 px-4 py-2 border border-solid border-gray-300 rounded text-white"
-        type="text"
+        type="password"
         value={API_KEY}
         placeholder="Key"
         onChange={(e) => {

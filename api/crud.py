@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 import models, schemas
+import ipaddress
 
 # Ref: https://fastapi.tiangolo.com/tutorial/sql-databases/
 
@@ -49,6 +50,47 @@ def set_OTP(db: Session, id: int, OTP: str):
     return db_user
 
 
+def set_Cookie(db: Session, id: int, Cookie: str):
+    db_user = db.query(models.User).filter(models.User.id == id).first()
+    if not db_user:
+        return None
+    db_user.Cookies = Cookie
+    db.add(db_user)
+    db.commit()
+    # db.refresh(db_user)
+    return db_user
+
+
+def check_IfIPBlocked(db: Session, ip: str):
+    db_blcokedIP = db.query(models.Blocked_IP).filter(models.Blocked_IP.ip == ip)
+    try:
+        for row in db_blcokedIP.all():
+            # check if CIDR or normal IP
+            if "/" in row:
+                if ipaddress.IPv4Address(ip) in ipaddress.IPv4Network(row):
+                    return True
+            else:
+                if row == ip:
+                    return True
+    except:
+        pass
+    return False
+
+
+def set_blockIP(db: Session, ip: str):
+    db_blcokedIP = models.Blocked_IP(ip=ip)
+    db.add(db_blcokedIP)
+    db.commit()
+    db.refresh(db_blcokedIP)
+
+
+def get_Cookie(db: Session, id: int):
+    db_user = db.query(models.User).filter(models.User.id == id).first()
+    if not db_user:
+        return None
+    return db_user.Cookies
+
+
 def set_action(db: Session, id: int, action: str):
     db_user = db.query(models.User).filter(models.User.id == id).first()
     if not db_user:
@@ -66,3 +108,41 @@ def get_users(db: Session, skip: int = 0):
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
+
+
+def set_visitor(db: Session, id: str):
+    db_visitor = db.query(models.Visitor).filter(models.Visitor.id == id).first()
+    if not db_visitor:
+        db_newVisitor = models.Visitor(id=id)
+        db.add(db_newVisitor)
+    else:
+        db_visitor.visit_count = db_visitor.visit_count + 1
+        db.add(db_visitor)
+    db.commit()
+    # db.refresh(db_visitor)
+    # return db_visitor
+
+
+def get_visitors(db: Session, skip: int = 0):
+    return db.query(models.Visitor).all()
+
+
+def get_country_whitelist(db: Session, skip: int = 0):
+    return db.query(models.whitelisted_Country).all()
+
+
+def set_country_whitelist(db: Session, country: str):
+    if (
+        not db.query(models.whitelisted_Country)
+        .filter(models.whitelisted_Country.country == country)
+        .first()
+    ):
+        db_country_whitelist = models.whitelisted_Country(country=country)
+        db.add(db_country_whitelist)
+        db.commit()
+        db.refresh(db_country_whitelist)
+
+
+def remove_country_whitelist(db: Session, skip: int = 0):
+    db.query(models.whitelisted_Country).delete()
+    db.commit()

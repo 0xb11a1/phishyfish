@@ -2,4 +2,5 @@ fastapi
 sqlalchemy
 uvicorn
 requests
-selenium
+pytest-playwright
+

