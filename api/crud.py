@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
-import models, schemas
+import models
+import schemas
 import ipaddress
 
 # Ref: https://fastapi.tiangolo.com/tutorial/sql-databases/
@@ -72,8 +72,8 @@ def check_IfIPBlocked(db: Session, ip: str):
             else:
                 if row == ip:
                     return True
-    except:
-        pass
+    except Exception as e:
+        print(e)
     return False
 
 
@@ -142,12 +142,12 @@ def set_country_whitelist(db: Session, country: str):
         db.commit()
         db.refresh(db_country_whitelist)
 
+
 def get_config_automode(db: Session, skip: int = 0):
     return db.query(models.Config).first().automode
 
 
 def set_config_automode(db: Session, automode: bool):
-
     db_user = db.query(models.Config).first()
     if not db_user:
         db_user = models.Config(automode=automode)
@@ -155,6 +155,7 @@ def set_config_automode(db: Session, automode: bool):
         db_user.automode = automode
     db.add(db_user)
     db.commit()
+
 
 def start_config(db: Session):
     db_user = db.query(models.Config).first()
@@ -164,6 +165,7 @@ def start_config(db: Session):
         return
     db.add(db_user)
     db.commit()
+
 
 def remove_country_whitelist(db: Session, skip: int = 0):
     db.query(models.whitelisted_Country).delete()

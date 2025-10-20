@@ -17,5 +17,6 @@ class Client(BaseModel):
     class Config:
         orm_mode = True
 
+
 class Visitors(BaseModel):
     id: str

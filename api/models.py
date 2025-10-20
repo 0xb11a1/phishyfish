@@ -1,5 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, Integer, String
 
 from database import Base
 
@@ -28,6 +27,7 @@ class Visitor(Base):
     id = Column(String, primary_key=True, index=True)
     visit_count = Column(Integer, default=1)
 
+
 class Blocked_County(Base):
     __tablename__ = "blocked_county"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -39,11 +39,13 @@ class whitelisted_Country(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     country = Column(String)
 
-# TODO: switch to yaml file later 
+
+# TODO: switch to yaml file later
 class Config(Base):
     __tablename__ = "Config"
-    id = Column(Integer,primary_key=True)
-    automode = Column(Boolean,default=False)
+    id = Column(Integer, primary_key=True)
+    automode = Column(Boolean, default=False)
+
 
 # TODO: move config to a table
 # class Config(Base):
