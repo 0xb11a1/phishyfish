@@ -20,8 +20,8 @@ export default function Home() {
         method: "GET",
         cache: "no-cache",
       });
-      const json = await response.json();
-      setcurrAction(JSON.parse(json).action);
+      const response_json = await response.json();
+      setcurrAction(response_json.action);
     };
 
     fetchData();

@@ -12,9 +12,9 @@ export default function OTP({ id }) {
         method: "GET",
         cache: "no-cache",
       });
-      const json = await res.json();
+      const res_json = await res.json();
       // return JSON.parse(json).data
-      setOTP_code(JSON.parse(json).data);
+      setOTP_code(res_json.data);
     };
     getOTP();
   }, []);

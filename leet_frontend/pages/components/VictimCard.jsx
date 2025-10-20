@@ -133,7 +133,7 @@ export default function VictimCard({
         `${process.env.API_URL}/OTP/${id}/${values.OTP}`,
         { method: "PUT", cache: "no-cache" }
       );
-      if (JSON.parse(await res.json()).status == "OK") {
+      if ((await res.json()).error == false) {
         toast.success(`set OTP ${values.OTP} to ID ${id} `);
         // setCurrOTP(await fetch(`${process.env.API_URL}/OTP/${id}`,{method: 'GET',cache: "no-cache"}));
         // useEffect(()=>{

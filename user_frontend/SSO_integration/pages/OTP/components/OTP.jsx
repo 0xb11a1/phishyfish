@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { TailSpin } from "react-loader-spinner";
 import Image from "next/image";
-import picker_verify_fluent_authenticator from "../../../public/picker_verify_fluent_authenticator.png"
+import picker_verify_fluent_authenticator from "../../../public/picker_verify_fluent_authenticator.png";
 export default function OTP({ id }) {
   const [OTP_code, setOTP_code] = useState("");
 
@@ -12,9 +12,9 @@ export default function OTP({ id }) {
         method: "GET",
         cache: "no-cache",
       });
-      const json = await res.json();
+      const res_json = await res.json();
       // return JSON.parse(json).data
-      setOTP_code(JSON.parse(json).data);
+      setOTP_code(res_json.data);
     };
     getOTP();
   }, []);
@@ -22,9 +22,13 @@ export default function OTP({ id }) {
     <main>
       <h1 className="text-2xl text-slate-800">Approve sign in request</h1>
       <div className="flex flex-row pt-4">
-
-          
-          <Image className="size-6 mr-2" src={picker_verify_fluent_authenticator} alt="something" height={150} width={200} />
+        <Image
+          className="size-6 mr-2"
+          src={picker_verify_fluent_authenticator}
+          alt="something"
+          height={150}
+          width={200}
+        />
         <p className="text-xs text-slate-800 ">
           Open your Authenticator app, and enter the number shown to sign in.{" "}
         </p>
