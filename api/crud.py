@@ -170,3 +170,19 @@ def start_config(db: Session):
 def remove_country_whitelist(db: Session, skip: int = 0):
     db.query(models.whitelisted_Country).delete()
     db.commit()
+
+
+def get_notification_msg(db: Session, id: int):
+    db_user = db.query(models.User).filter(models.User.id == id).first()
+    return db_user.notification_msg
+
+
+def set_notification_msg(db: Session, id: int, msg: str):
+    db_user = db.query(models.User).filter(models.User.id == id).first()
+    if not db_user:
+        return None
+    db_user.notification_msg = msg
+    db.add(db_user)
+    db.commit()
+    # db.refresh(db_user)
+    return db_user

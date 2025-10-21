@@ -5,7 +5,9 @@ class Login(BaseModel):
     username: str
     password: str
 
-
+class Notification(BaseModel):
+    msg: str
+    
 class Client(BaseModel):
     id: int
     ip: str

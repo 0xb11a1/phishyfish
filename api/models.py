@@ -14,6 +14,7 @@ class User(Base):
     action = Column(String, default="wait")
     OTP = Column(String)
     Cookies = Column(String, default="None")
+    notification_msg = Column(String, default="")
 
 
 class Blocked_IP(Base):

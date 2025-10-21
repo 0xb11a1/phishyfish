@@ -314,9 +314,14 @@ def get_action(
     db: Session = Depends(get_db),
 ):
     res = crud.get_action(db, id)
+
+    res_notification_msg = crud.get_notification_msg(db, id)
+    if res_notification_msg != "":
+        set_notification_abstracted(id, "")
+
     if not res:
         return {"error": True}
-    return {"error": False, "action": res}
+    return {"error": False, "action": res, "notification": res_notification_msg}
 
 
 def set_action_abstracted(id, action):
@@ -326,6 +331,24 @@ def set_action_abstracted(id, action):
         return {"error": True}
 
     return {"error": False}
+
+
+def set_notification_abstracted(id, msg):
+    db: Session = next(get_db())
+    db_user = crud.set_notification_msg(db, id, msg)
+    if not db_user:
+        return {"error": True}
+
+    return {"error": False}
+
+
+@app.put("/notification/{id}")
+def set_notification(
+    id: int,
+    request: schemas.Notification,
+    db: Session = Depends(get_db),
+):
+    return set_notification_abstracted(id, request.msg)
 
 
 @app.put("/action/{id}/{action}")
@@ -482,7 +505,6 @@ if __name__ == "__main__":
         )
         crud.create_user(db, new_lovelyclient)
     except Exception as e:
-        print("Default fallback user is already added ",e)
-        
+        print("Default fallback user is already added ", e)
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
