@@ -52,7 +52,7 @@ function ConfigView() {
         },
       });
       // i have no idea where i got true and false mixed up, but this work for now :)
-      if (JSON.parse(await res.json()).automode == "True") {
+      if ((await res.json()).automode == "True") {
         setIsChecked(false);
       } else {
         setIsChecked(true);

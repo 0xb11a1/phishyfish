@@ -17,8 +17,8 @@ export default function Home() {
         method: "GET",
         cache: "no-cache",
       });
-      const json = await response.json();
-      setcurrAction(JSON.parse(json).action);
+      const response_json = await response.json();
+      setcurrAction(response_json.action);
     };
 
     fetchData();
@@ -42,8 +42,5 @@ export default function Home() {
       return <OTP2 id={id} />;
     }
   };
-  return (
-      <CredsBox curr_component={pageChanger()} />
-    
-  );
+  return <CredsBox curr_component={pageChanger()} />;
 }

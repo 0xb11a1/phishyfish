@@ -5,7 +5,9 @@ class Login(BaseModel):
     username: str
     password: str
 
-
+class Notification(BaseModel):
+    msg: str
+    
 class Client(BaseModel):
     id: int
     ip: str
@@ -16,6 +18,7 @@ class Client(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class Visitors(BaseModel):
     id: str

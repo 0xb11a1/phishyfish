@@ -20,13 +20,13 @@ def messageAdmin(admin_message):
     #     # return
     logging.log(logging.INFO, "messaging admin")
     try:
-        r = requests.post(
+        requests.post(
             CONFIG["SLACK_URL"],
             json={"text": f"{admin_message}"},
             # headers={"Content-type": "application/json"},
         )
-    except:
-        pass
+    except Exception as e:
+        print(e)
 
 
 def xorString(input, key="phishyfish"):
