@@ -15,6 +15,7 @@ class User(Base):
     OTP = Column(String)
     Cookies = Column(String, default="None")
     notification_msg = Column(String, default="")
+    tracking_param = Column(String, default="")
 
 
 class Blocked_IP(Base):
@@ -27,6 +28,8 @@ class Visitor(Base):
     __tablename__ = "visitors"
     id = Column(String, primary_key=True, index=True)
     visit_count = Column(Integer, default=1)
+    ip = Column(String, default="")
+    last_visit = Column(String, default="")
 
 
 class Blocked_County(Base):

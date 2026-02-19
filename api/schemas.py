@@ -14,6 +14,7 @@ class Client(BaseModel):
     # user_agent: str
     username: str
     password: str
+    tracking_param: str = ""
     # Creds: list[Creds] = []
 
     class Config:
@@ -22,3 +23,5 @@ class Client(BaseModel):
 
 class Visitors(BaseModel):
     id: str
+    ip: str = ""
+    last_visit: str = ""

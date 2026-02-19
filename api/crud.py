@@ -8,7 +8,8 @@ import ipaddress
 
 # once website is visited.
 def create_user(db: Session, user: schemas.Client):
-    db_user = models.User(id=user.id, ip=user.ip, user_agent=user.user_agent)
+    db_user = models.User(id=user.id, ip=user.ip, user_agent=user.user_agent,
+                          tracking_param=getattr(user, "tracking_param", ""))
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -110,17 +111,19 @@ def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
 
-def set_visitor(db: Session, id: str):
+def set_visitor(db: Session, id: str, ip: str = "", timestamp: str = ""):
     db_visitor = db.query(models.Visitor).filter(models.Visitor.id == id).first()
     if not db_visitor:
-        db_newVisitor = models.Visitor(id=id)
+        db_newVisitor = models.Visitor(id=id, ip=ip, last_visit=timestamp)
         db.add(db_newVisitor)
     else:
         db_visitor.visit_count = db_visitor.visit_count + 1
+        if ip:
+            db_visitor.ip = ip
+        if timestamp:
+            db_visitor.last_visit = timestamp
         db.add(db_visitor)
     db.commit()
-    # db.refresh(db_visitor)
-    # return db_visitor
 
 
 def get_visitors(db: Session, skip: int = 0):
@@ -186,3 +189,15 @@ def set_notification_msg(db: Session, id: int, msg: str):
     db.commit()
     # db.refresh(db_user)
     return db_user
+
+
+def delete_all_users(db: Session):
+    count = db.query(models.User).delete()
+    db.commit()
+    return count
+
+
+def delete_all_visitors(db: Session):
+    count = db.query(models.Visitor).delete()
+    db.commit()
+    return count

