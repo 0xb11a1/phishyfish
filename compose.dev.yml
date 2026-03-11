@@ -1,0 +1,21 @@
+services:
+  api:
+    volumes:
+      - ./api:/app
+      - ./api/db_file:/root/db/:z
+      - ./api/loot:/app/loot/:z
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  leet_frontend:
+    volumes:
+      - ./leet_frontend:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/.next
+    command: ["npm", "run", "dev"]
+
+  user-frontend:
+    volumes:
+      - ./user_frontend/o365:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/.next
+    command: ["npm", "run", "dev"]

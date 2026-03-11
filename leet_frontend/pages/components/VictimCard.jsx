@@ -13,7 +13,7 @@ import {
   Input,
 } from "@nextui-org/react";
 import { data } from "autoprefixer";
-import { revalidatePath } from "next/cache";
+// import { revalidatePath } from "next/cache";
 import { Formik, Field, Form, FormikHelpers } from "formik";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
