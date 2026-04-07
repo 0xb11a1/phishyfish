@@ -3,21 +3,21 @@ import Login from "./components/Login";
 import React from "react";
 import CredsBox from "./components/CredsBox";
 import Block_page from "./components/block_page";
-import getConfig from "next/config";
+// import getConfig from "next/config";
 import { getCookie } from "cookies-next";
 
 
 export async function getServerSideProps({ req }) {
-  const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
+  // const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
 
-  const API_URI = serverRuntimeConfig.apiUrl;
+  const API_URI = process.env.API_URI_INTERN;
   let res;
   try {
     res = await fetch(
       `${API_URI}/ipblockcheck/${req.headers["x-forwarded-for"]}`
     );
   } catch (error) {
-    const API_URI = publicRuntimeConfig.apiUrl;
+    const API_URI = process.env.NEXT_PUBLIC_API_URL;
     res = await fetch(
       `${API_URI}/ipblockcheck/${req.headers["x-forwarded-for"]}`
     );

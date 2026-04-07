@@ -13,7 +13,7 @@
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^6.1.1",
     "cookies-next": "^4.1.0",
-    "next": "^14.2.3",
+    "next": "^16.2.2",
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^5.0.1",
