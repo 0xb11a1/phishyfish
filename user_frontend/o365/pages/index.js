@@ -10,7 +10,7 @@ import { getCookie } from "cookies-next";
 export async function getServerSideProps({ req }) {
   // const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
 
-  const API_URI = process.env.API_URI_INTERN;
+  const API_URI = process.env.NEXT_PUBLIC_API_URL_INTERN;
   let res;
   try {
     res = await fetch(

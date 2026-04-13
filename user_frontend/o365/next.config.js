@@ -6,7 +6,7 @@ const nextConfig = {
 module.exports = {
   
   env: {
-    API_URL: process.env.API_URL,
+    API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
   serverRuntimeConfig: {
     // Will only be available on the server side
@@ -14,7 +14,7 @@ module.exports = {
   },
   publicRuntimeConfig: {
     // Will be available on both server and client
-    apiUrl: process.env.API_URL
+    apiUrl: process.env.NEXT_PUBLIC_API_URL
   },
   // basePath: process.env.SUB_DIR,
   // assetPrefix: process.env.SUB_DIR
